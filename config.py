@@ -92,7 +92,7 @@ class TestingConfig(Config):
     Ambiente de Testes Automatizados.
     """
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:' # Banco em memória RAM (volátil)
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'sparkmanager_dev.db')
     WTF_CSRF_ENABLED = False # Desabilita proteção de formulário para facilitar testes
 
 
