@@ -130,11 +130,11 @@ def create_app(config_name='default'):
 
     # 7. Inicialização do Banco
     # Apenas garante que as tabelas existem, não apaga dados
-    #with app.app_context():
+    with app.app_context():
         pass
         # LINHAS COMENTADAS PARA EVITAR ERRO DE READ-ONLY NO VERCEL
-        # db.create_all()
-        # create_default_admin()
+        db.create_all()
+        create_default_admin()
 
     return app
 
