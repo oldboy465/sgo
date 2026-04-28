@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     
     <title>{% block title %}SparkManagerDocs - UEMA{% endblock %}</title>
@@ -106,18 +106,16 @@
              x-cloak>
         </div>
 
-        <div class="flex flex-col flex-1 w-0 overflow-hidden">
+        <div class="flex flex-col flex-1 min-w-0 overflow-hidden">
             
-            <header class="relative z-10 flex-shrink-0 bg-white shadow-sm border-b border-gray-200">
+            <header class="relative z-10 flex-shrink-0 bg-white shadow-sm border-b border-gray-200 flex h-16">
                 
-                <div class="absolute left-0 top-0 h-16 w-16 flex items-center justify-center md:hidden">
-                    <button @click="sidebarOpen = true" type="button" class="text-gray-500 hover:text-gray-700 focus:outline-none p-2 rounded-md">
-                        <span class="sr-only">Abrir sidebar</span>
-                        <i class="fas fa-bars fa-lg"></i>
-                    </button>
-                </div>
+                <button @click="sidebarOpen = true" type="button" class="px-4 border-r border-gray-200 text-gray-500 hover:text-brand-600 hover:bg-gray-50 focus:outline-none focus:bg-gray-100 focus:text-gray-600 md:hidden flex items-center justify-center transition-colors">
+                    <span class="sr-only">Abrir sidebar</span>
+                    <i class="fas fa-bars fa-lg"></i>
+                </button>
 
-                <div class="flex-1 px-4 flex justify-between h-16 md:px-8">
+                <div class="flex-1 px-4 flex justify-between md:px-8">
                     {% include 'base/navbar.html' %}
                 </div>
             </header>
@@ -176,11 +174,11 @@
                 </div>
 
                 <footer class="bg-white border-t border-gray-200 mt-auto py-6 px-4 sm:px-6 lg:px-8">
-                    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
-                        <div class="mb-2 md:mb-0">
+                    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center text-center md:text-left text-sm text-gray-500">
+                        <div class="mb-3 md:mb-0">
                             &copy; {{ current_year }} <span class="font-bold text-brand-600">SparkManagerDocs</span>.
                         </div>
-                        <div class="flex items-center space-x-4">
+                        <div class="flex items-center justify-center space-x-2 sm:space-x-4">
                             <span>Versão 2.1.0 (Beta)</span>
                             <span class="text-gray-300">|</span>
                             <span>Desenvolvido para <span class="font-bold text-uema-blue">UEMA</span></span>
