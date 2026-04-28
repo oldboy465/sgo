@@ -1,11 +1,11 @@
-import socket
+import os
 from app import create_app
 from app.controllers.notas import notas_bp
 
-# Cria a aplicação no modo de desenvolvimento
-app = create_app('development')
+# Detecta se está no Vercel para usar o modo production automaticamente
+env = 'production' if os.environ.get('VERCEL') else 'development'
+app = create_app(env)
 
-# Registra o novo módulo de Notas Orçamentárias no sistema
 app.register_blueprint(notas_bp)
 
 def get_ip_address():
