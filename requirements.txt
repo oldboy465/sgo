@@ -7,3 +7,4 @@ WTForms
 SQLAlchemy
 werkzeug
 psycopg2-binary
+email-validator
