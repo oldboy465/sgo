@@ -1,32 +1,32 @@
 {% extends "base/base.html" %}
 
 {% block content %}
-<div class="bg-white rounded-lg shadow-md p-6">
-    <div class="flex justify-between items-center mb-6">
+<div class="bg-white rounded-lg shadow-md p-4 sm:p-6">
+    <div class="flex flex-col space-y-4 md:flex-row md:justify-between md:items-center md:space-y-0 mb-6">
         <h2 class="text-2xl font-bold text-gray-800">Notas Orçamentárias</h2>
-        <div class="flex space-x-2">
+        <div class="flex flex-wrap gap-2 md:space-x-2 md:gap-0">
             
-            <button onclick="copiarRelatorioWpp()" class="inline-flex items-center justify-center rounded-md border border-green-600 bg-green-50 px-4 py-2 text-sm font-medium text-green-700 shadow-sm hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 sm:w-auto" title="Copiar lista para WhatsApp">
+            <button onclick="copiarRelatorioWpp()" class="inline-flex items-center justify-center rounded-md border border-green-600 bg-green-50 px-4 py-2 text-sm font-medium text-green-700 shadow-sm hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 w-full sm:w-auto" title="Copiar lista para WhatsApp">
                 <i class="fab fa-whatsapp mr-2"></i> Copiar WPP
             </button>
             
-            <a href="{{ url_for('notas.relatorio', status=request.args.get('status', ''), tipo_no=request.args.get('tipo_no', '')) }}" target="_blank" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center transition-colors" title="Gerar Relatório em PDF">
+            <a href="{{ url_for('notas.relatorio', status=request.args.get('status', ''), tipo_no=request.args.get('tipo_no', '')) }}" target="_blank" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center justify-center transition-colors w-full sm:w-auto" title="Gerar Relatório em PDF">
                 <i class="fas fa-file-pdf mr-2"></i> Relatório PDF
             </a>
-            <a href="{{ url_for('notas.create') }}" class="bg-brand-600 hover:bg-brand-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center transition-colors">
+            <a href="{{ url_for('notas.create') }}" class="bg-brand-600 hover:bg-brand-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center justify-center transition-colors w-full sm:w-auto">
                 <i class="fas fa-plus mr-2"></i> Nova Nota
             </a>
         </div>
     </div>
 
-    <form method="GET" action="{{ url_for('notas.list') }}" class="mb-6 flex space-x-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+    <form method="GET" action="{{ url_for('notas.list') }}" class="mb-6 flex flex-col space-y-3 md:flex-row md:space-x-4 md:space-y-0 bg-gray-50 p-4 rounded-lg border border-gray-200">
         <div class="flex-1">
             <input type="text" name="search" placeholder="Buscar por Número da NO..." value="{{ request.args.get('search', '') }}" class="shadow-sm focus:ring-brand-500 focus:border-brand-500 block w-full sm:text-sm border-gray-300 rounded-md py-2 px-3">
         </div>
-        <div class="w-48">
+        <div class="w-full md:w-48">
             <input type="text" name="tipo_no" placeholder="Tipo de Nota..." value="{{ request.args.get('tipo_no', '') }}" class="shadow-sm focus:ring-brand-500 focus:border-brand-500 block w-full sm:text-sm border-gray-300 rounded-md py-2 px-3 bg-white">
         </div>
-        <div class="w-48">
+        <div class="w-full md:w-48">
             <select name="status" class="shadow-sm focus:ring-brand-500 focus:border-brand-500 block w-full sm:text-sm border-gray-300 rounded-md py-2 px-3 bg-white">
                 <option value="">Todos os Status</option>
                 <option value="Liberada" {% if request.args.get('status') == 'Liberada' %}selected{% endif %}>Liberada</option>
@@ -35,12 +35,14 @@
                 <option value="Realizada" {% if request.args.get('status') == 'Realizada' %}selected{% endif %}>Realizada</option>
             </select>
         </div>
-        <button type="submit" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-            Filtrar
-        </button>
-        <a href="{{ url_for('notas.list') }}" class="text-gray-600 hover:text-gray-800 font-medium py-2 px-4">
-            Limpar
-        </a>
+        <div class="flex space-x-2">
+            <button type="submit" class="flex-1 md:flex-none bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                Filtrar
+            </button>
+            <a href="{{ url_for('notas.list') }}" class="flex-1 md:flex-none text-center bg-gray-200 hover:bg-gray-300 text-gray-600 hover:text-gray-800 font-medium py-2 px-4 rounded transition-colors">
+                Limpar
+            </a>
+        </div>
     </form>
 
     <div class="overflow-x-auto border border-gray-200 rounded-lg">
@@ -121,7 +123,6 @@
                 processo: "{{ nota.processo_sei if nota.processo_sei else '-' }}",
                 status: "{{ nota.status }}",
                 dataEmissao: "{{ nota.data_emissao.strftime('%d/%m/%Y') if nota.data_emissao else '-' }}",
-                // ADIÇÃO: Captura do objeto com formatação para evitar quebra do JavaScript
                 objeto: "{{ nota.descricao_resumida | escape | replace('\n', ' ') | replace('\r', '') }}"
             },
             {% endfor %}
@@ -143,7 +144,6 @@
                 diaSemanaStr = dias[dataObj.getDay()];
             }
 
-            // ADIÇÃO: O objeto resumido inserido após a data/dia da semana
             let linha = `📌NO.º ${n.numero} Emitida em: ${n.dataEmissao} - ${diaSemanaStr} - Objeto: ${n.objeto} - Tipo de Nota: ${n.tipo}`;
             
             if (n.oficio !== '-' && n.oficio !== '') {
