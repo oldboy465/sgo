@@ -81,6 +81,10 @@ class ProductionConfig(Config):
     else:
         # Fallback para banco em MEMÓRIA para o Vercel não dar erro de leitura/escrita
         SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+        # =======================================================
+        # CORREÇÃO CRÍTICA: Remove opções de pool incompatíveis com SQLite
+        # =======================================================
+        SQLALCHEMY_ENGINE_OPTIONS = {}
 
 
 class TestingConfig(Config):
