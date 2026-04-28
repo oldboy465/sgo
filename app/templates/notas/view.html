@@ -1,0 +1,88 @@
+{% extends "base/base.html" %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-md p-6 max-w-4xl mx-auto">
+    <div class="flex justify-between items-center mb-6 border-b pb-4">
+        <h2 class="text-2xl font-bold text-gray-800">
+            <i class="fas fa-file-invoice-dollar text-brand-600 mr-2"></i> Detalhes da Nota Orçamentária
+        </h2>
+        <div class="flex space-x-2">
+            <a href="{{ url_for('notas.list') }}" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition-colors">
+                <i class="fas fa-arrow-left mr-2"></i> Voltar
+            </a>
+            <a href="{{ url_for('notas.edit', id=nota.id) }}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition-colors">
+                <i class="fas fa-edit mr-2"></i> Editar
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-gray-50 p-5 rounded-lg border border-gray-200 shadow-sm">
+            <h3 class="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Informações Básicas</h3>
+            <div class="space-y-4">
+                <div>
+                    <span class="block text-sm font-medium text-gray-500">Número da NO</span>
+                    <span class="block text-lg font-bold text-gray-900">{{ nota.numero_no }}</span>
+                </div>
+                <div>
+                    <span class="block text-sm font-medium text-gray-500">Tipo de NO</span>
+                    <span class="block text-base text-gray-900">{{ nota.tipo_no }}</span>
+                </div>
+                <div>
+                    <span class="block text-sm font-medium text-gray-500">Data de Emissão</span>
+                    <span class="block text-base text-gray-900">{{ nota.data_emissao.strftime('%d/%m/%Y') if nota.data_emissao else 'N/D' }}</span>
+                </div>
+                <div>
+                    <span class="block text-sm font-medium text-gray-500 mb-1">Status</span>
+                    <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full 
+                        {% if nota.status == 'Liberada' %} bg-blue-100 text-blue-800 
+                        {% elif nota.status == 'Assinada' %} bg-purple-100 text-purple-800
+                        {% elif nota.status == 'Associada' %} bg-yellow-100 text-yellow-800
+                        {% elif nota.status == 'Realizada' %} bg-green-100 text-green-800
+                        {% else %} bg-gray-200 text-gray-800 {% endif %}">
+                        {{ nota.status }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gray-50 p-5 rounded-lg border border-gray-200 shadow-sm">
+            <h3 class="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Vínculos Institucionais</h3>
+            <div class="space-y-4">
+                <div>
+                    <span class="block text-sm font-medium text-gray-500">Possui Ofício Vinculado?</span>
+                    <span class="block text-base text-gray-900">{{ nota.tem_oficio }}</span>
+                </div>
+                {% if nota.tem_oficio == 'Sim' %}
+                <div>
+                    <span class="block text-sm font-medium text-gray-500">Número do Ofício</span>
+                    <span class="block text-base font-semibold text-blue-600">{{ nota.numero_oficio or 'Não informado' }}</span>
+                </div>
+                <div>
+                    <span class="block text-sm font-medium text-gray-500">Processo SEI</span>
+                    <span class="block text-base text-gray-900">{{ nota.processo_sei or 'Não informado' }}</span>
+                </div>
+                {% endif %}
+                <div>
+                    <span class="block text-sm font-medium text-gray-500">Criado por</span>
+                    <span class="block text-base text-gray-900">{{ nota.criador.nome if nota.criador else 'Usuário não identificado' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-span-1 md:col-span-2 bg-gray-50 p-5 rounded-lg border border-gray-200 shadow-sm">
+            <h3 class="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Detalhes e Observações</h3>
+            <div class="space-y-5">
+                <div>
+                    <span class="block text-sm font-medium text-gray-500 mb-2">Descrição Resumida</span>
+                    <div class="bg-white p-4 rounded border border-gray-300 text-gray-800 whitespace-pre-wrap min-h-[80px]">{{ nota.descricao_resumida }}</div>
+                </div>
+                <div>
+                    <span class="block text-sm font-medium text-gray-500 mb-2">Observações</span>
+                    <div class="bg-white p-4 rounded border border-gray-300 text-gray-800 whitespace-pre-wrap min-h-[80px]">{{ nota.observacoes or 'Nenhuma observação registrada para esta nota.' }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

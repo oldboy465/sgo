@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Notas Orçamentárias</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; -webkit-print-color-adjust: exact; }
+            .shadow-md { box-shadow: none !important; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-8 text-gray-800">
+
+    <div class="no-print max-w-4xl mx-auto mb-6 bg-white p-4 rounded-lg shadow-md border border-gray-200">
+        <div class="flex justify-between items-center mb-4">
+            <div>
+                <h2 class="text-lg font-bold text-gray-700">Filtros e Exportação</h2>
+                <p class="text-sm text-gray-500">Ajuste os filtros abaixo e utilize os botões para exportar.</p>
+            </div>
+            <div class="space-x-2">
+                <button onclick="exportarWhatsApp()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors">
+                    <i class="fab fa-whatsapp mr-1"></i> WhatsApp
+                </button>
+                <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors">
+                    <i class="fas fa-file-pdf mr-1"></i> PDF / Imprimir
+                </button>
+                <button onclick="window.close()" class="text-gray-600 hover:text-gray-800 font-medium py-2 px-4">
+                    Fechar Janela
+                </button>
+            </div>
+        </div>
+
+        <form method="GET" action="{{ url_for('notas.relatorio') }}" class="flex space-x-4 border-t border-gray-100 pt-4">
+            <div class="flex-1">
+                <label class="block text-xs font-bold text-gray-700 mb-1">Tipo de NO</label>
+                <select name="tipo_no" class="block w-full border border-gray-300 rounded py-2 px-3 text-sm focus:outline-none focus:border-blue-500 bg-white">
+                    <option value="">Todos os Tipos</option>
+                    <option value="Crédito Adicional" {% if request.args.get('tipo_no') == 'Crédito Adicional' %}selected{% endif %}>Crédito Adicional</option>
+                    <option value="Alteração Sistema" {% if request.args.get('tipo_no') == 'Alteração Sistema' %}selected{% endif %}>Alteração Sistema</option>
+                    <option value="Transferência" {% if request.args.get('tipo_no') == 'Transferência' %}selected{% endif %}>Transferência</option>
+                    <option value="Transposição" {% if request.args.get('tipo_no') == 'Transposição' %}selected{% endif %}>Transposição</option>
+                    <option value="Portaria" {% if request.args.get('tipo_no') == 'Portaria' %}selected{% endif %}>Portaria</option>
+                    <option value="Outras" {% if request.args.get('tipo_no') == 'Outras' %}selected{% endif %}>Outras</option>
+                </select>
+            </div>
+            <div class="flex-1">
+                <label class="block text-xs font-bold text-gray-700 mb-1">Status</label>
+                <select name="status" class="block w-full border border-gray-300 rounded py-2 px-3 text-sm focus:outline-none focus:border-blue-500 bg-white">
+                    <option value="">Todos os Status</option>
+                    <option value="Liberada" {% if request.args.get('status') == 'Liberada' %}selected{% endif %}>Liberada</option>
+                    <option value="Assinada" {% if request.args.get('status') == 'Assinada' %}selected{% endif %}>Assinada</option>
+                    <option value="Associada" {% if request.args.get('status') == 'Associada' %}selected{% endif %}>Associada</option>
+                    <option value="Realizada" {% if request.args.get('status') == 'Realizada' %}selected{% endif %}>Realizada</option>
+                </select>
+            </div>
+            <div class="flex items-end">
+                <button type="submit" class="bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-6 rounded text-sm transition-colors">
+                    Aplicar Filtros
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="max-w-4xl mx-auto bg-white p-12 shadow-lg relative min-h-[29.7cm]">
+        <div class="flex items-center justify-center mb-8 border-b-2 border-gray-100 pb-6">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo Instituição" class="h-24 w-auto object-contain mr-6">
+            
+            <div class="text-center">
+                <h1 class="text-xl font-bold text-gray-900 uppercase tracking-wider">{{ config.sigla_orgao or 'INSTITUIÇÃO' }}</h1>
+                <h2 class="text-md font-semibold text-gray-700">{{ config.nome_departamento or 'Departamento Administrativo' }}</h2>
+                <h3 class="text-sm text-gray-500 mt-1">Sistema de Gestão de Documentos (SparkDocs)</h3>
+            </div>
+        </div>
+
+        <div class="flex justify-between items-end mb-6">
+            <div>
+                <p class="text-xs text-gray-500 uppercase font-semibold">Gerado em:</p>
+                <p class="text-sm font-medium">{{ data_geracao.strftime('%d/%m/%Y') }} <span class="text-gray-400">às</span> {{ data_geracao.strftime('%H:%M:%S') }}</p>
+            </div>
+            <div class="text-right">
+                <h2 class="text-2xl font-bold text-gray-800">Relatório Gerencial de Notas</h2>
+                <p class="text-sm text-gray-600">Listagem analítica de Notas Orçamentárias.</p>
+                {% if request.args.get('status') or request.args.get('tipo_no') %}
+                    <p class="text-xs text-red-600 font-bold uppercase mt-1">⚠️ Relatório com Filtros Aplicados</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="bg-gray-50 rounded p-4 mb-8 border border-gray-200">
+            <p class="text-xs text-gray-500 uppercase mb-2">Solicitado por:</p>
+            <div class="flex items-center">
+                <div class="font-medium text-gray-900 mr-2">{{ current_user.nome }}</div>
+                <div class="text-gray-500 text-sm">&lt;{{ current_user.email }}&gt;</div>
+            </div>
+        </div>
+
+        <div class="mb-8">
+            <h3 class="text-sm font-bold text-gray-700 uppercase mb-3 border-l-4 border-blue-500 pl-2">Resumo Executivo</h3>
+            <div class="grid grid-cols-4 gap-4">
+                <div class="bg-white border border-gray-200 p-3 rounded text-center">
+                    <span class="block text-2xl font-bold text-gray-800">{{ total_notas }}</span>
+                    <span class="text-xs text-gray-500 uppercase">Total Listado</span>
+                </div>
+                {% for status, qtd in stats_status %}
+                <div class="bg-white border border-gray-200 p-3 rounded text-center">
+                    <span class="block text-2xl font-bold text-gray-800">{{ qtd }}</span>
+                    <span class="text-xs text-gray-500 uppercase">{{ status }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="mb-8">
+            <h3 class="text-sm font-bold text-gray-700 uppercase mb-3 border-l-4 border-blue-500 pl-2">Detalhamento</h3>
+            <table class="min-w-full text-left text-xs">
+                <thead>
+                    <tr class="border-b-2 border-gray-300">
+                        <th class="py-2 text-gray-600 font-bold uppercase w-20">Data</th>
+                        <th class="py-2 text-gray-600 font-bold uppercase w-28">Nº NO</th>
+                        <th class="py-2 text-gray-600 font-bold uppercase w-28">Tipo</th>
+                        <th class="py-2 text-gray-600 font-bold uppercase w-32">Referência</th>
+                        <th class="py-2 text-gray-600 font-bold uppercase">Descrição</th>
+                        <th class="py-2 text-gray-600 font-bold uppercase w-20 text-center">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for nota in notas %}
+                    <tr>
+                        <td class="py-3 align-top text-gray-500">{{ nota.data_emissao.strftime('%d/%m/%Y') }}</td>
+                        <td class="py-3 align-top font-bold text-gray-800">{{ nota.numero_no }}</td>
+                        <td class="py-3 align-top text-gray-700">{{ nota.tipo_no }}</td>
+                        <td class="py-3 align-top text-gray-600">
+                            {% if nota.tem_oficio == 'Sim' %}
+                                <div class="font-medium text-gray-800">{{ nota.numero_oficio or 'Ofício s/n' }}</div>
+                                {% if nota.processo_sei %}
+                                <div class="text-gray-400 text-[10px]">SEI: {{ nota.processo_sei }}</div>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-gray-300 italic text-[10px]">Sem ofício</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-3 align-top text-gray-600 pr-4">
+                            <span class="truncate block max-w-xs">{{ nota.descricao_resumida }}</span>
+                        </td>
+                        <td class="py-3 align-top text-center">
+                            {% if nota.status == 'Liberada' %}
+                                <span class="text-blue-700 font-bold">Liberada</span>
+                            {% elif nota.status == 'Assinada' %}
+                                <span class="text-purple-700 font-bold">Assinada</span>
+                            {% elif nota.status == 'Associada' %}
+                                <span class="text-yellow-700 font-bold">Associada</span>
+                            {% elif nota.status == 'Realizada' %}
+                                <span class="text-green-700 font-bold">Realizada</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="py-4 text-center text-gray-400 italic">Nenhuma nota encontrada para os filtros aplicados.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="absolute bottom-0 left-0 w-full p-12">
+            <div class="border-t border-gray-300 pt-2 flex justify-between text-[10px] text-gray-400">
+                <span>SparkManagerDocs v2.1 (Beta)</span>
+                <span>Documento gerado eletronicamente para fins administrativos</span>
+                <span>Página 1 de 1</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function exportarWhatsApp() {
+            // Constrói o texto do relatório
+            let texto = "*Relatório Gerencial de Notas Orçamentárias*\n";
+            texto += "Gerado em: {{ data_geracao.strftime('%d/%m/%Y') }}\n";
+            texto += "Total Listado: {{ total_notas }}\n\n";
+            
+            {% for nota in notas %}
+            texto += "📌 {{ nota.numero_no }} - {{ nota.data_emissao.strftime('%d/%m/%Y') }} - {{ nota.descricao_resumida | replace('\r', '') | replace('\n', ' ') }} - {{ nota.status }}\n";
+            {% endfor %}
+            
+            // Método Fallback (Garante a cópia mesmo no IP local em HTTP sem SSL)
+            const areaTemporaria = document.createElement("textarea");
+            areaTemporaria.value = texto;
+            
+            // Esconde a área temporária da tela
+            areaTemporaria.style.position = "absolute";
+            areaTemporaria.style.left = "-9999px";
+            document.body.appendChild(areaTemporaria);
+            
+            // Seleciona e copia
+            areaTemporaria.select();
+            areaTemporaria.setSelectionRange(0, 99999); // Para funcionar em mobile
+            
+            try {
+                const sucesso = document.execCommand('copy');
+                if (sucesso) {
+                    alert("✅ Relatório copiado com sucesso!\n\nAgora é só abrir o WhatsApp e colar (Ctrl+V) a mensagem na conversa.");
+                } else {
+                    alert("⚠️ O navegador impediu a cópia automática. Por favor, copie manualmente.");
+                }
+            } catch (err) {
+                alert("⚠️ Erro ao tentar copiar o texto.");
+                console.error(err);
+            }
+            
+            // Limpa o elemento invisível
+            document.body.removeChild(areaTemporaria);
+        }
+    </script>
+</body>
+</html>

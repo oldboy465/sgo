@@ -1,0 +1,70 @@
+{% extends "base/base.html" %}
+
+{% block title %}Setor - SparkManagerDocs{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    
+    <nav class="mb-5 text-sm font-medium text-gray-500">
+        <a href="{{ url_for('admin.setores_list') }}" class="hover:text-brand-600">Setores</a>
+        <span class="mx-2">/</span>
+        <span class="text-gray-900">{{ title }}</span>
+    </nav>
+
+    <div class="bg-white shadow sm:rounded-lg border border-gray-200">
+        <div class="px-4 py-5 sm:px-6 bg-gray-50 border-b border-gray-200">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">{{ title }}</h3>
+        </div>
+        
+        <div class="px-4 py-5 sm:p-6">
+            <form method="POST">
+                {{ form.hidden_tag() }}
+
+                <div class="space-y-6">
+                    
+                    <div>
+                        <label for="sigla" class="block text-sm font-medium text-gray-700">Sigla (Ex: ASPLAN)</label>
+                        <div class="mt-1">
+                            {{ form.sigla(class="uppercase shadow-sm focus:ring-brand-500 focus:border-brand-500 block w-full sm:text-sm border-gray-300 rounded-md placeholder-gray-300", placeholder="AAAA") }}
+                        </div>
+                        {% for error in form.sigla.errors %}
+                            <p class="mt-2 text-sm text-red-600">{{ error }}</p>
+                        {% endfor %}
+                        <p class="mt-2 text-xs text-gray-500">Será convertido para maiúsculas automaticamente.</p>
+                    </div>
+
+                    <div>
+                        <label for="nome" class="block text-sm font-medium text-gray-700">Nome da Unidade / Setor</label>
+                        <div class="mt-1">
+                            {{ form.nome(class="shadow-sm focus:ring-brand-500 focus:border-brand-500 block w-full sm:text-sm border-gray-300 rounded-md") }}
+                        </div>
+                        {% for error in form.nome.errors %}
+                            <p class="mt-2 text-sm text-red-600">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+
+                    <div class="relative flex items-start">
+                        <div class="flex items-center h-5">
+                            {{ form.ativo(class="focus:ring-brand-500 h-4 w-4 text-brand-600 border-gray-300 rounded") }}
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <label for="ativo" class="font-medium text-gray-700">Setor Ativo</label>
+                            <p class="text-gray-500">Se desmarcado, não aparecerá nas listas de envio de ofícios.</p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="mt-8 pt-5 border-t border-gray-200 flex justify-end">
+                    <a href="{{ url_for('admin.setores_list') }}" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 mr-3">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500">
+                        Salvar Setor
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

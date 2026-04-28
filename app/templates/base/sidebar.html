@@ -1,0 +1,192 @@
+<div class="flex flex-col h-full bg-slate-900 border-r border-slate-800">
+
+    <div class="flex items-center justify-center h-16 flex-shrink-0 px-4 bg-slate-900 border-b border-slate-800 shadow-sm">
+        <a href="{{ url_for('main.index') }}" class="flex items-center group">
+            <div class="bg-brand-600 rounded-lg p-1.5 mr-3 group-hover:bg-brand-500 transition-colors">
+                <i class="fas fa-bolt text-white text-lg"></i>
+            </div>
+            <span class="text-white font-bold text-xl tracking-wider font-sans">
+                SPARK<span class="text-brand-500">DOCS</span>
+            </span>
+        </a>
+    </div>
+
+    {% if current_user.is_authenticated %}
+    <div class="px-4 py-6 border-b border-slate-800 bg-slate-900/50">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <img class="h-10 w-10 rounded-full border-2 border-slate-700 shadow-sm"
+                     src="https://ui-avatars.com/api/?name={{ current_user.nome }}&background=0ea5e9&color=fff&bold=true"
+                     alt="Avatar">
+            </div>
+            <div class="ml-3 overflow-hidden">
+                <p class="text-sm font-medium text-white truncate max-w-[140px]" title="{{ current_user.nome }}">
+                    {{ current_user.nome.split()[0] }}
+                </p>
+                <div class="flex items-center mt-0.5">
+                    <span class="block h-2 w-2 rounded-full bg-green-400 mr-1.5 ring-1 ring-slate-900"></span>
+                    <p class="text-xs font-medium text-slate-400 truncate">
+                        {{ current_user.perfil }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <nav class="flex-1 px-2 py-6 space-y-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
+
+        <a href="{{ url_for('main.index') }}"
+           class="group flex items-center px-2 py-2.5 text-sm font-medium rounded-md transition-all duration-200
+           {% if request.endpoint and request.endpoint == 'main.index' %} 
+             bg-brand-600 text-white shadow-lg shadow-brand-900/50 
+           {% else %} 
+             text-slate-300 hover:bg-slate-800 hover:text-white 
+           {% endif %}">
+            <i class="fas fa-tachometer-alt mr-3 w-6 text-center text-lg 
+               {% if request.endpoint and request.endpoint == 'main.index' %} text-white {% else %} text-slate-400 group-hover:text-white {% endif %}">
+            </i>
+            Dashboard
+        </a>
+
+        <div x-data="{ expanded: {{ 'true' if request.endpoint and 'oficios' in request.endpoint else 'false' }} }" class="space-y-1">
+            <button @click="expanded = !expanded"
+                    type="button"
+                    class="w-full group flex items-center justify-between px-2 py-2.5 text-sm font-medium rounded-md transition-colors text-slate-300 hover:bg-slate-800 hover:text-white focus:outline-none">
+                <div class="flex items-center">
+                    <i class="fas fa-folder-open mr-3 w-6 text-center text-lg text-slate-400 group-hover:text-white transition-colors"></i>
+                    Ofícios
+                </div>
+                <i class="fas fa-chevron-right text-xs text-slate-500 transition-transform duration-200"
+                   :class="expanded ? 'rotate-90 text-white' : ''"></i>
+            </button>
+            <div x-show="expanded" x-collapse x-cloak class="space-y-1 ml-4 border-l-2 border-slate-700 pl-2">
+                <a href="{{ url_for('oficios.create') }}"
+                   class="group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors
+                   {% if request.endpoint and request.endpoint == 'oficios.create' %} text-white bg-white/10 {% else %} text-slate-400 hover:text-white hover:bg-white/5 {% endif %}">
+                    <span class="w-1.5 h-1.5 rounded-full mr-2 {% if request.endpoint and request.endpoint == 'oficios.create' %} bg-brand-400 {% else %} bg-slate-500 group-hover:bg-white {% endif %}"></span>
+                    Novo Ofício
+                </a>
+                <a href="{{ url_for('oficios.list') }}"
+                   class="group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors
+                   {% if request.endpoint and request.endpoint == 'oficios.list' %} text-white bg-white/10 {% else %} text-slate-400 hover:text-white hover:bg-white/5 {% endif %}">
+                    <span class="w-1.5 h-1.5 rounded-full mr-2 {% if request.endpoint and request.endpoint == 'oficios.list' %} bg-brand-400 {% else %} bg-slate-500 group-hover:bg-white {% endif %}"></span>
+                    Consultar Todos
+                </a>
+            </div>
+        </div>
+
+        <div x-data="{ expanded: {{ 'true' if request.endpoint and 'notas' in request.endpoint else 'false' }} }" class="space-y-1">
+            <button @click="expanded = !expanded"
+                    type="button"
+                    class="w-full group flex items-center justify-between px-2 py-2.5 text-sm font-medium rounded-md transition-colors text-slate-300 hover:bg-slate-800 hover:text-white focus:outline-none">
+                <div class="flex items-center">
+                    <i class="fas fa-file-invoice-dollar mr-3 w-6 text-center text-lg text-slate-400 group-hover:text-white transition-colors"></i>
+                    Notas Orçamentárias
+                </div>
+                <i class="fas fa-chevron-right text-xs text-slate-500 transition-transform duration-200"
+                   :class="expanded ? 'rotate-90 text-white' : ''"></i>
+            </button>
+            <div x-show="expanded" x-collapse x-cloak class="space-y-1 ml-4 border-l-2 border-slate-700 pl-2">
+                <a href="{{ url_for('notas.create') }}"
+                   class="group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors
+                   {% if request.endpoint and request.endpoint == 'notas.create' %} text-white bg-white/10 {% else %} text-slate-400 hover:text-white hover:bg-white/5 {% endif %}">
+                    <span class="w-1.5 h-1.5 rounded-full mr-2 {% if request.endpoint and request.endpoint == 'notas.create' %} bg-brand-400 {% else %} bg-slate-500 group-hover:bg-white {% endif %}"></span>
+                    Nova Nota
+                </a>
+                <a href="{{ url_for('notas.list') }}"
+                   class="group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors
+                   {% if request.endpoint and request.endpoint == 'notas.list' %} text-white bg-white/10 {% else %} text-slate-400 hover:text-white hover:bg-white/5 {% endif %}">
+                    <span class="w-1.5 h-1.5 rounded-full mr-2 {% if request.endpoint and request.endpoint == 'notas.list' %} bg-brand-400 {% else %} bg-slate-500 group-hover:bg-white {% endif %}"></span>
+                    Consultar Todas
+                </a>
+            </div>
+        </div>
+
+        <div x-data="{ expanded: {{ 'true' if request.endpoint and 'relatorios' in request.endpoint else 'false' }} }" class="space-y-1">
+            <button @click="expanded = !expanded"
+                    type="button"
+                    class="w-full group flex items-center justify-between px-2 py-2.5 text-sm font-medium rounded-md transition-colors text-slate-300 hover:bg-slate-800 hover:text-white focus:outline-none">
+                <div class="flex items-center">
+                    <i class="fas fa-chart-pie mr-3 w-6 text-center text-lg text-slate-400 group-hover:text-white transition-colors"></i>
+                    Relatórios
+                </div>
+                <i class="fas fa-chevron-right text-xs text-slate-500 transition-transform duration-200"
+                   :class="expanded ? 'rotate-90 text-white' : ''"></i>
+            </button>
+            <div x-show="expanded" x-collapse x-cloak class="space-y-1 ml-4 border-l-2 border-slate-700 pl-2">
+                <a href="{{ url_for('main.relatorio_geral') }}" target="_blank"
+                   class="group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors
+                   {% if request.endpoint == 'main.relatorio_geral' %} text-white bg-white/10 {% else %} text-slate-400 hover:text-white hover:bg-white/5 {% endif %}">
+                    <i class="fas fa-print mr-2 text-xs opacity-70"></i>
+                    Geral de Ofícios
+                </a>
+                <a href="{{ url_for('notas.relatorio') }}" target="_blank"
+                   class="group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors
+                   {% if request.endpoint == 'notas.relatorio' %} text-white bg-white/10 {% else %} text-slate-400 hover:text-white hover:bg-white/5 {% endif %}">
+                    <i class="fas fa-print mr-2 text-xs opacity-70"></i>
+                    Geral de Notas
+                </a>
+            </div>
+        </div>
+
+        {% if current_user.perfil == 'Administrador' %}
+        <div class="pt-6 pb-2">
+            <div class="px-3 mb-2 flex items-center">
+                <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Administração
+                </span>
+                <div class="ml-2 flex-grow border-t border-slate-800"></div>
+            </div>
+            
+            <div x-data="{ expanded: {{ 'true' if request.endpoint and 'admin' in request.endpoint else 'false' }} }" class="space-y-1">
+                <button @click="expanded = !expanded"
+                        type="button"
+                        class="w-full group flex items-center justify-between px-2 py-2.5 text-sm font-medium rounded-md transition-colors text-slate-300 hover:bg-slate-800 hover:text-white focus:outline-none">
+                    <div class="flex items-center">
+                        <i class="fas fa-cogs mr-3 w-6 text-center text-lg text-slate-400 group-hover:text-white"></i>
+                        Configurações
+                    </div>
+                    <i class="fas fa-chevron-right text-xs text-slate-500 transition-transform duration-200"
+                       :class="expanded ? 'rotate-90 text-white' : ''"></i>
+                </button>
+                <div x-show="expanded" x-collapse x-cloak class="space-y-1 ml-4 border-l-2 border-slate-700 pl-2">
+                    <a href="{{ url_for('admin.users_list') }}"
+                       class="group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors
+                       {% if request.endpoint and 'admin.users' in request.endpoint %} text-white bg-white/10 {% else %} text-slate-400 hover:text-white hover:bg-white/5 {% endif %}">
+                        <i class="fas fa-users-cog mr-2 text-xs opacity-70"></i>
+                        Usuários
+                    </a>
+                    <a href="{{ url_for('admin.setores_list') }}"
+                       class="group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors
+                       {% if request.endpoint and 'admin.setores' in request.endpoint %} text-white bg-white/10 {% else %} text-slate-400 hover:text-white hover:bg-white/5 {% endif %}">
+                        <i class="fas fa-building mr-2 text-xs opacity-70"></i>
+                        Setores
+                    </a>
+                    <a href="{{ url_for('admin.tipos_list') }}"
+                       class="group flex items-center px-2 py-2 text-sm font-medium rounded-md text-slate-400 hover:text-white hover:bg-white/5 transition-colors
+                       {% if request.endpoint and 'admin.tipos' in request.endpoint %} text-white bg-white/10 {% endif %}">
+                        <i class="fas fa-tags mr-2 text-xs opacity-70"></i>
+                        Tipos Processo
+                    </a>
+                    <a href="{{ url_for('admin.configuracoes') }}"
+                       class="group flex items-center px-2 py-2 text-sm font-medium rounded-md text-slate-400 hover:text-white hover:bg-white/5 transition-colors
+                       {% if request.endpoint and 'admin.configuracoes' in request.endpoint %} text-white bg-white/10 {% endif %}">
+                        <i class="fas fa-sliders-h mr-2 text-xs opacity-70"></i>
+                        Sistema
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </nav>
+
+    <div class="bg-slate-900 border-t border-slate-800 p-4">
+        <div class="flex items-center justify-between">
+            <span class="text-xs text-slate-500">© 2026 Spark</span>
+            <a href="{{ url_for('auth.logout') }}" class="text-slate-500 hover:text-red-400 transition-colors" title="Sair">
+                <i class="fas fa-power-off"></i>
+            </a>
+        </div>
+    </div>
+</div>

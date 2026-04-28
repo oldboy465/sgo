@@ -1,0 +1,98 @@
+{% extends "base/base.html" %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-md p-6 max-w-5xl mx-auto">
+    <div class="flex justify-between items-center mb-6 border-b pb-4">
+        <h2 class="text-2xl font-bold text-gray-800">
+            <i class="fas fa-file-alt text-brand-600 mr-2"></i> Detalhes do Ofício
+        </h2>
+        <div class="flex space-x-2">
+            <a href="{{ url_for('oficios.list') }}" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition-colors">
+                <i class="fas fa-arrow-left mr-2"></i> Voltar
+            </a>
+            <a href="{{ url_for('oficios.edit', id=oficio.id) }}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition-colors">
+                <i class="fas fa-edit mr-2"></i> Editar
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-gray-50 p-5 rounded-lg border border-gray-200 shadow-sm">
+                <h3 class="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Identificação do Ofício</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <span class="block text-sm font-medium text-gray-500">Número do Ofício</span>
+                        <span class="block text-lg font-bold text-gray-900">{{ oficio.numero_oficio }}</span>
+                    </div>
+                    <div>
+                        <span class="block text-sm font-medium text-gray-500">Processo SEI</span>
+                        <span class="block text-base font-semibold text-blue-600">{{ oficio.processo_sei or 'Não informado' }}</span>
+                    </div>
+                    <div class="md:col-span-2">
+                        <span class="block text-sm font-medium text-gray-500">Título / Assunto</span>
+                        <span class="block text-base text-gray-900">{{ oficio.titulo }}</span>
+                    </div>
+                    <div>
+                        <span class="block text-sm font-medium text-gray-500">Tipo de Processo</span>
+                        <span class="block text-base text-gray-900">{{ oficio.tipo_processo.nome if oficio.tipo_processo else 'Não classificado' }}</span>
+                    </div>
+                    <div>
+                        <span class="block text-sm font-medium text-gray-500">Quem Assinou</span>
+                        <span class="block text-base text-gray-900">{{ oficio.quem_assinou }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 p-5 rounded-lg border border-gray-200 shadow-sm">
+                <h3 class="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Conteúdo</h3>
+                <div class="space-y-5">
+                    <div>
+                        <span class="block text-sm font-medium text-gray-500 mb-2">Objeto Detalhado</span>
+                        <div class="bg-white p-4 rounded border border-gray-300 text-gray-800 whitespace-pre-wrap min-h-[100px]">{{ oficio.objeto_detalhado or 'Sem descrição detalhada.' }}</div>
+                    </div>
+                    <div>
+                        <span class="block text-sm font-medium text-gray-500 mb-2">Despacho / Ação Tomada</span>
+                        <div class="bg-white p-4 rounded border border-gray-300 text-gray-800 whitespace-pre-wrap min-h-[80px]">{{ oficio.acao_tomada or 'Ainda não há despachos ou ações tomadas para este ofício.' }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <div class="bg-gray-50 p-5 rounded-lg border border-gray-200 shadow-sm">
+                <h3 class="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Tramitação e Status</h3>
+                <div class="space-y-4">
+                    <div>
+                        <span class="block text-sm font-medium text-gray-500 mb-1">Status Atual</span>
+                        <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full border
+                            {% if oficio.status == 'Concluído' %} bg-green-100 text-green-800 border-green-200
+                            {% elif oficio.status == 'Em andamento' %} bg-blue-100 text-blue-800 border-blue-200
+                            {% elif oficio.status == 'Cancelado' %} bg-red-100 text-red-800 border-red-200
+                            {% else %} bg-gray-200 text-gray-800 border-gray-300 {% endif %}">
+                            {{ oficio.status }}
+                        </span>
+                    </div>
+                    <div>
+                        <span class="block text-sm font-medium text-gray-500">Setor Emissor</span>
+                        <span class="block text-base text-gray-900">{{ oficio.setor_emissor.sigla if oficio.setor_emissor else 'N/D' }}</span>
+                    </div>
+                    <div>
+                        <span class="block text-sm font-medium text-gray-500">Setor Atual</span>
+                        <span class="block text-base font-semibold text-indigo-600">{{ oficio.setor_atual.sigla if oficio.setor_atual else 'N/D' }}</span>
+                    </div>
+                    <hr class="border-gray-300">
+                    <div>
+                        <span class="block text-sm font-medium text-gray-500">Data de Envio</span>
+                        <span class="block text-base text-gray-900">{{ oficio.data_envio.strftime('%d/%m/%Y') if oficio.data_envio else 'N/D' }}</span>
+                    </div>
+                    <div>
+                        <span class="block text-sm font-medium text-gray-500">Tempo no Setor Atual</span>
+                        <span class="block text-base text-gray-900">{{ oficio.tempo_no_setor }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

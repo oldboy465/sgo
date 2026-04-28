@@ -1,0 +1,152 @@
+<nav class="flex-1 flex justify-between h-full bg-white border-b border-gray-200">
+
+    <div class="flex-1 flex justify-center lg:justify-start">
+        <div class="w-full max-w-lg lg:max-w-xs flex items-center">
+            <form class="w-full" action="{{ url_for('oficios.list') }}" method="GET">
+                <label for="search" class="sr-only">Buscar Ofício</label>
+                <div class="relative text-gray-400 focus-within:text-brand-600">
+                    <div class="pointer-events-none absolute inset-y-0 left-0 pl-3 flex items-center">
+                        <i class="fas fa-search h-5 w-5 transition-colors duration-200"></i>
+                    </div>
+                    <input id="search" name="search"
+                        class="block w-full bg-white py-2 pl-10 pr-3 border border-gray-300 rounded-md leading-5 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 focus:border-brand-500 sm:text-sm shadow-sm transition duration-150 ease-in-out"
+                        placeholder="Buscar Ofício, Processo SEI..."
+                        type="search">
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="ml-4 flex items-center md:ml-6 space-x-4">
+
+        <div class="relative" x-data="{ open: false }">
+            <button @click="open = !open" @click.outside="open = false"
+                class="bg-white p-1 rounded-full text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 relative transition-colors duration-200">
+                <span class="sr-only">Ver notificações</span>
+                <i class="fas fa-bell fa-lg"></i>
+                
+                {% if notificacoes_count > 0 %}
+                <span class="absolute top-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-white bg-red-500 animate-pulse"></span>
+                {% endif %}
+            </button>
+            
+            <div x-show="open"
+                x-transition:enter="transition ease-out duration-100"
+                x-transition:enter-start="transform opacity-0 scale-95"
+                x-transition:enter-end="transform opacity-100 scale-100"
+                x-transition:leave="transition ease-in duration-75"
+                x-transition:leave-start="transform opacity-100 scale-100"
+                x-transition:leave-end="transform opacity-0 scale-95"
+                class="origin-top-right absolute right-0 mt-2 w-80 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
+                style="display: none;">
+
+                <div class="px-4 py-2 border-b border-gray-100 flex justify-between items-center">
+                    <span class="text-xs font-bold text-gray-500 uppercase">Notificações</span>
+                    {% if notificacoes_count > 0 %}
+                    <span class="text-xs text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full">Novas</span>
+                    {% endif %}
+                </div>
+
+                <div class="max-h-64 overflow-y-auto">
+                    {% for n in notificacoes_nav %}
+                    <a href="{{ n.link if n.link else '#' }}" class="block px-4 py-3 hover:bg-gray-50 transition duration-150 ease-in-out group border-b border-gray-50">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 pt-0.5">
+                                {% if n.categoria == 'success' %}
+                                    <i class="fas fa-check-circle text-green-500"></i>
+                                {% elif n.categoria == 'warning' %}
+                                    <i class="fas fa-exchange-alt text-orange-500"></i>
+                                {% else %}
+                                    <i class="fas fa-info-circle text-blue-500"></i>
+                                {% endif %}
+                            </div>
+                            <div class="ml-3 w-0 flex-1">
+                                <p class="text-sm font-medium text-gray-900 group-hover:text-brand-600">{{ n.mensagem }}</p>
+                                <p class="text-xs text-brand-500 mt-1 font-semibold">{{ n.tempo_atras() }}</p>
+                            </div>
+                        </div>
+                    </a>
+                    {% else %}
+                    <div class="px-4 py-6 text-center text-gray-500 text-sm">
+                        <p>Nenhuma notificação recente.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <a href="#" class="block px-4 py-2 text-center text-sm text-brand-600 font-medium hover:text-brand-800 border-t border-gray-100 hover:bg-gray-50 transition-colors">
+                    Ver todas
+                </a>
+            </div>
+        </div>
+        
+        <div class="h-6 w-px bg-gray-200" aria-hidden="true"></div>
+        
+        <div class="relative" x-data="{ open: false }">
+            <button @click="open = !open" @click.outside="open = false"
+                class="max-w-xs bg-white flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 p-1 hover:bg-gray-100 transition-colors duration-200">
+                <span class="sr-only">Abrir menu de usuário</span>
+
+                {% if current_user.is_authenticated %}
+                <img class="h-8 w-8 rounded-full object-cover border border-gray-200 shadow-sm"
+                    src="https://ui-avatars.com/api/?name={{ current_user.nome }}&background=0ea5e9&color=fff&bold=true&font-size=0.5"
+                    alt="{{ current_user.nome }}">
+
+                <div class="hidden ml-3 lg:block text-left">
+                    <p class="text-sm font-medium text-gray-700 leading-tight">{{ current_user.nome.split()[0] }}</p>
+                    <p class="text-xs text-gray-500">{{ current_user.perfil }}</p>
+                </div>
+                <i class="fas fa-chevron-down ml-2 text-xs text-gray-400 hidden lg:block transition-transform duration-200" :class="{'rotate-180': open}"></i>
+                {% else %}
+                <div class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
+                    <i class="fas fa-user text-gray-400"></i>
+                </div>
+                <span class="hidden ml-3 text-gray-700 text-sm font-medium lg:block">Visitante</span>
+                {% endif %}
+            </button>
+            
+            <div x-show="open"
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="transform opacity-0 scale-95"
+                x-transition:enter-end="transform opacity-100 scale-100"
+                x-transition:leave="transition ease-in duration-75"
+                x-transition:leave-start="transform opacity-100 scale-100"
+                x-transition:leave-end="transform opacity-0 scale-95"
+                class="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50 divide-y divide-gray-100"
+                style="display: none;">
+
+                {% if current_user.is_authenticated %}
+                <div class="px-4 py-2 lg:hidden">
+                    <p class="text-sm font-medium text-gray-900 truncate">{{ current_user.nome }}</p>
+                    <p class="text-xs text-gray-500 truncate">{{ current_user.email }}</p>
+                </div>
+                <div class="py-1">
+                    <a href="{{ url_for('main.meus_dados') }}" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                        <i class="fas fa-user-circle mr-3 text-gray-400 group-hover:text-brand-500 transition-colors"></i>
+                        Meus Dados
+                    </a>
+
+                    {% if current_user.perfil == 'Administrador' %}
+                    <a href="{{ url_for('admin.configuracoes') }}" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                        <i class="fas fa-cog mr-3 text-gray-400 group-hover:text-brand-500 transition-colors"></i>
+                        Configurações
+                    </a>
+                    {% endif %}
+                </div>
+
+                <div class="py-1">
+                    <a href="{{ url_for('auth.logout') }}" class="group flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                        <i class="fas fa-sign-out-alt mr-3 text-red-400 group-hover:text-red-500 transition-colors"></i>
+                        Sair do Sistema
+                    </a>
+                </div>
+                {% else %}
+                <div class="py-1">
+                    <a href="{{ url_for('auth.login') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-sign-in-alt mr-2"></i> Entrar
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>

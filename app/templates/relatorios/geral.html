@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Ofícios</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; -webkit-print-color-adjust: exact; }
+            .shadow-md { box-shadow: none !important; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-8 text-gray-800">
+
+    <div class="no-print max-w-4xl mx-auto mb-6 flex justify-between items-center bg-white p-4 rounded-lg shadow-md border border-gray-200">
+        <div>
+            <h2 class="text-lg font-bold text-gray-700">Visualização de Impressão</h2>
+            <p class="text-sm text-gray-500">Utilize o botão ao lado para gerar o PDF ou imprimir.</p>
+        </div>
+        <div class="space-x-3">
+            <button onclick="window.print()" class="bg-brand-600 hover:bg-brand-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline bg-blue-600">
+                Salvar PDF / Imprimir
+            </button>
+            <button onclick="window.close()" class="text-gray-600 hover:text-gray-800 font-medium py-2 px-4">
+                Fechar Janela
+            </button>
+        </div>
+    </div>
+
+    <div class="max-w-4xl mx-auto bg-white p-12 shadow-lg relative min-h-[29.7cm]">
+        
+        <div class="flex items-center justify-center mb-8 border-b-2 border-gray-100 pb-6">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo Instituição" class="h-24 w-auto object-contain mr-6">
+            
+            <div class="text-center">
+                <h1 class="text-xl font-bold text-gray-900 uppercase tracking-wider">{{ config.sigla_orgao or 'INSTITUIÇÃO' }}</h1>
+                <h2 class="text-md font-semibold text-gray-700">{{ config.nome_departamento or 'Departamento Administrativo' }}</h2>
+                <h3 class="text-sm text-gray-500 mt-1">Sistema de Gestão de Documentos (SparkDocs)</h3>
+            </div>
+        </div>
+
+        <div class="flex justify-between items-end mb-6">
+            <div>
+                <p class="text-xs text-gray-500 uppercase font-semibold">Gerado em:</p>
+                <p class="text-sm font-medium">{{ data_geracao.strftime('%d/%m/%Y') }} <span class="text-gray-400">às</span> {{ data_geracao.strftime('%H:%M:%S') }}</p>
+            </div>
+            <div class="text-right">
+                <h2 class="text-2xl font-bold text-gray-800">Relatório Gerencial de Ofícios</h2>
+                <p class="text-sm text-gray-600">Listagem analítica com status e localização.</p>
+                {% if request.args.get('search') or request.args.get('status') or request.args.get('setor_atual_id') %}
+                    <p class="text-xs text-red-600 font-bold uppercase mt-1">⚠️ Relatório com Filtros Aplicados</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="bg-gray-50 rounded p-4 mb-8 border border-gray-200">
+            <p class="text-xs text-gray-500 uppercase mb-2">Solicitado por:</p>
+            <div class="flex items-center">
+                <div class="font-medium text-gray-900 mr-2">{{ current_user.nome }}</div>
+                <div class="text-gray-500 text-sm">&lt;{{ current_user.email }}&gt;</div>
+            </div>
+        </div>
+
+        <div class="mb-8">
+            <h3 class="text-sm font-bold text-gray-700 uppercase mb-3 border-l-4 border-blue-500 pl-2">Resumo Executivo</h3>
+            <div class="grid grid-cols-4 gap-4">
+                <div class="bg-white border border-gray-200 p-3 rounded text-center">
+                    <span class="block text-2xl font-bold text-gray-800">{{ total_oficios }}</span>
+                    <span class="text-xs text-gray-500 uppercase">Total Listado</span>
+                </div>
+                {% for status, qtd in stats_status %}
+                <div class="bg-white border border-gray-200 p-3 rounded text-center">
+                    <span class="block text-2xl font-bold text-gray-800">{{ qtd }}</span>
+                    <span class="text-xs text-gray-500 uppercase">{{ status }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="mb-8">
+            <h3 class="text-sm font-bold text-gray-700 uppercase mb-3 border-l-4 border-blue-500 pl-2">Detalhamento dos Processos</h3>
+            <table class="min-w-full text-left text-xs">
+                <thead>
+                    <tr class="border-b-2 border-gray-300">
+                        <th class="py-2 text-gray-600 font-bold uppercase w-24">Data</th>
+                        <th class="py-2 text-gray-600 font-bold uppercase w-32">Nº Ofício / SEI</th>
+                        <th class="py-2 text-gray-600 font-bold uppercase">Assunto / Título</th>
+                        <th class="py-2 text-gray-600 font-bold uppercase w-20">Origem</th>
+                        <th class="py-2 text-gray-600 font-bold uppercase w-20">Local Atual</th>
+                        <th class="py-2 text-gray-600 font-bold uppercase w-24">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for oficio in oficios %}
+                    <tr>
+                        <td class="py-2 align-top text-gray-500">{{ oficio.data_envio.strftime('%d/%m/%Y') }}</td>
+                        <td class="py-2 align-top font-medium text-gray-800">
+                            {{ oficio.numero_oficio }}
+                            {% if oficio.processo_sei %}
+                            <div class="text-gray-400 text-[10px]">SEI: {{ oficio.processo_sei }}</div>
+                            {% else %}
+                            <div class="text-gray-300 text-[10px]">-</div>
+                            {% endif %}
+                        </td>
+                        <td class="py-2 align-top text-gray-700 pr-4">{{ oficio.titulo }}</td>
+                        <td class="py-2 align-top text-gray-500">{{ oficio.setor_emissor.sigla }}</td>
+                        <td class="py-2 align-top text-gray-500 font-medium">{{ oficio.setor_atual.sigla if oficio.setor_atual else 'N/A' }}</td>
+                        <td class="py-2 align-top">
+                            {% if oficio.status == 'Concluído' %}
+                                <span class="text-green-700 font-bold">Concluído</span>
+                            {% elif oficio.status == 'Em andamento' %}
+                                <span class="text-blue-700 font-bold">Em Andamento</span>
+                            {% elif oficio.status == 'Atendido' %}
+                                <span class="text-purple-700 font-bold">Atendido</span>
+                            {% elif oficio.status == 'Substituído' %}
+                                <span class="text-gray-600 font-bold">Substituído</span>
+                            {% else %}
+                                <span class="text-yellow-700 font-bold">{{ oficio.status }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="py-4 text-center text-gray-400 italic">Nenhum registro encontrado para os filtros selecionados.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="absolute bottom-0 left-0 w-full p-12">
+            <div class="border-t border-gray-300 pt-2 flex justify-between text-[10px] text-gray-400">
+                <span>SparkManagerDocs v2.1 (Beta)</span>
+                <span>Documento gerado eletronicamente para fins administrativos</span>
+                <span>Página 1 de 1</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

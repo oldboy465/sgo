@@ -1,0 +1,113 @@
+{% extends "base/base.html" %}
+
+{% block title %}{{ title }} - SparkManagerDocs{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    
+    <nav class="mb-5 text-sm font-medium text-gray-500">
+        <a href="{{ url_for('admin.users_list') }}" class="hover:text-brand-600">Usuários</a>
+        <span class="mx-2">/</span>
+        <span class="text-gray-900">{{ title }}</span>
+    </nav>
+
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg border border-gray-200">
+        <div class="px-4 py-5 sm:px-6 bg-gray-50 border-b border-gray-200">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">{{ title }}</h3>
+            <p class="mt-1 max-w-2xl text-sm text-gray-500">Preencha os dados de acesso, perfil e vínculo de setores.</p>
+        </div>
+        
+        <div class="px-4 py-5 sm:p-6">
+            <form method="POST" action="">
+                {{ form.hidden_tag() }}
+
+                <div class="grid grid-cols-6 gap-6">
+                    
+                    <div class="col-span-6 sm:col-span-4">
+                        <label for="nome" class="block text-sm font-medium text-gray-700">Nome Completo</label>
+                        {{ form.nome(class="mt-1 focus:ring-brand-500 focus:border-brand-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md") }}
+                        {% for error in form.nome.errors %}
+                            <span class="text-red-600 text-xs">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <div class="col-span-6 sm:col-span-4">
+                        <label for="email" class="block text-sm font-medium text-gray-700">E-mail Corporativo</label>
+                        {{ form.email(class="mt-1 focus:ring-brand-500 focus:border-brand-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md") }}
+                        {% for error in form.email.errors %}
+                            <span class="text-red-600 text-xs">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <div class="col-span-6 sm:col-span-3">
+                        <label for="perfil" class="block text-sm font-medium text-gray-700">Perfil de Acesso</label>
+                        {{ form.perfil(class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm") }}
+                    </div>
+
+                    <div class="col-span-6 sm:col-span-3 flex items-center pt-6">
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                {{ form.ativo(class="focus:ring-brand-500 h-4 w-4 text-brand-600 border-gray-300 rounded") }}
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="ativo" class="font-medium text-gray-700">Usuário Ativo?</label>
+                                <p class="text-gray-500">Desmarque para bloquear o acesso.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-span-6">
+                        <div class="border-t border-gray-200 my-4"></div>
+                        <label class="block text-sm font-semibold text-gray-800 mb-3">Setores Autorizados (Controle de Visibilidade)</label>
+                        <p class="text-xs text-gray-500 mb-3">Selecione os setores cujos ofícios este usuário terá permissão para visualizar e interagir. (Observação: Administradores têm acesso global independentemente desta marcação).</p>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 p-4 bg-gray-50 border border-gray-200 rounded-md max-h-48 overflow-y-auto">
+                            {% for subfield in form.setores %}
+                            <div class="flex items-center">
+                                {{ subfield(class="focus:ring-brand-500 h-4 w-4 text-brand-600 border-gray-300 rounded cursor-pointer") }}
+                                {{ subfield.label(class="ml-2 block text-sm text-gray-800 cursor-pointer") }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        {% for error in form.setores.errors %}
+                            <span class="text-red-600 text-xs mt-1 block">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <div class="col-span-6">
+                        <div class="border-t border-gray-200 my-2"></div>
+                        <p class="text-xs text-gray-500 mb-4">Deixe os campos de senha em branco se não quiser alterá-la.</p>
+                    </div>
+
+                    <div class="col-span-6 sm:col-span-3">
+                        <label for="password" class="block text-sm font-medium text-gray-700">Nova Senha</label>
+                        {{ form.password(class="mt-1 focus:ring-brand-500 focus:border-brand-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md", placeholder="••••••") }}
+                        {% for error in form.password.errors %}
+                            <span class="text-red-600 text-xs">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <div class="col-span-6 sm:col-span-3">
+                        <label for="confirm_password" class="block text-sm font-medium text-gray-700">Confirmar Senha</label>
+                        {{ form.confirm_password(class="mt-1 focus:ring-brand-500 focus:border-brand-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md", placeholder="••••••") }}
+                        {% for error in form.confirm_password.errors %}
+                            <span class="text-red-600 text-xs">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                </div>
+
+                <div class="mt-6 flex justify-end">
+                    <a href="{{ url_for('admin.users_list') }}" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 mr-3">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500">
+                        <i class="fas fa-save mr-2 mt-0.5"></i> Salvar Dados
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

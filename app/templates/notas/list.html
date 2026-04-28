@@ -1,0 +1,186 @@
+{% extends "base/base.html" %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-md p-6">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">Notas Orçamentárias</h2>
+        <div class="flex space-x-2">
+            
+            <button onclick="copiarRelatorioWpp()" class="inline-flex items-center justify-center rounded-md border border-green-600 bg-green-50 px-4 py-2 text-sm font-medium text-green-700 shadow-sm hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 sm:w-auto" title="Copiar lista para WhatsApp">
+                <i class="fab fa-whatsapp mr-2"></i> Copiar WPP
+            </button>
+            
+            <a href="{{ url_for('notas.relatorio', status=request.args.get('status', ''), tipo_no=request.args.get('tipo_no', '')) }}" target="_blank" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center transition-colors" title="Gerar Relatório em PDF">
+                <i class="fas fa-file-pdf mr-2"></i> Relatório PDF
+            </a>
+            <a href="{{ url_for('notas.create') }}" class="bg-brand-600 hover:bg-brand-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center transition-colors">
+                <i class="fas fa-plus mr-2"></i> Nova Nota
+            </a>
+        </div>
+    </div>
+
+    <form method="GET" action="{{ url_for('notas.list') }}" class="mb-6 flex space-x-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+        <div class="flex-1">
+            <input type="text" name="search" placeholder="Buscar por Número da NO..." value="{{ request.args.get('search', '') }}" class="shadow-sm focus:ring-brand-500 focus:border-brand-500 block w-full sm:text-sm border-gray-300 rounded-md py-2 px-3">
+        </div>
+        <div class="w-48">
+            <input type="text" name="tipo_no" placeholder="Tipo de Nota..." value="{{ request.args.get('tipo_no', '') }}" class="shadow-sm focus:ring-brand-500 focus:border-brand-500 block w-full sm:text-sm border-gray-300 rounded-md py-2 px-3 bg-white">
+        </div>
+        <div class="w-48">
+            <select name="status" class="shadow-sm focus:ring-brand-500 focus:border-brand-500 block w-full sm:text-sm border-gray-300 rounded-md py-2 px-3 bg-white">
+                <option value="">Todos os Status</option>
+                <option value="Liberada" {% if request.args.get('status') == 'Liberada' %}selected{% endif %}>Liberada</option>
+                <option value="Assinada" {% if request.args.get('status') == 'Assinada' %}selected{% endif %}>Assinada</option>
+                <option value="Associada" {% if request.args.get('status') == 'Associada' %}selected{% endif %}>Associada</option>
+                <option value="Realizada" {% if request.args.get('status') == 'Realizada' %}selected{% endif %}>Realizada</option>
+            </select>
+        </div>
+        <button type="submit" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+            Filtrar
+        </button>
+        <a href="{{ url_for('notas.list') }}" class="text-gray-600 hover:text-gray-800 font-medium py-2 px-4">
+            Limpar
+        </a>
+    </form>
+
+    <div class="overflow-x-auto border border-gray-200 rounded-lg">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Número NO</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for nota in notas %}
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ nota.data_emissao.strftime('%d/%m/%Y') }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">{{ nota.numero_no }}</div>
+                        {% if nota.tem_oficio == 'Sim' %}
+                            <div class="text-xs text-gray-500 mt-1">Ofício: {{ nota.numero_oficio or '-' }}</div>
+                            <div class="text-xs text-gray-400">SEI: {{ nota.processo_sei or '-' }}</div>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ nota.tipo_no }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if nota.status == 'Liberada' %}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Liberada</span>
+                        {% elif nota.status == 'Assinada' %}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">Assinada</span>
+                        {% elif nota.status == 'Associada' %}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Associada</span>
+                        {% elif nota.status == 'Realizada' %}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Realizada</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                        
+                        <a href="{{ url_for('notas.view', id=nota.id) }}" class="text-blue-500 hover:text-blue-700 mr-3" title="Visualizar Nota"><i class="fas fa-eye"></i></a>
+                        
+                        {% if nota.tem_oficio == 'Sim' and nota.numero_oficio %}
+                        <a href="{{ url_for('oficios.list', search=nota.numero_oficio) }}" class="text-gray-600 hover:text-gray-900 mr-3" title="Visualizar Ofício"><i class="fas fa-file-alt"></i></a>
+                        {% endif %}
+                        
+                        <a href="{{ url_for('notas.edit', id=nota.id) }}" class="text-indigo-600 hover:text-indigo-900 mr-3" title="Editar"><i class="fas fa-edit"></i></a>
+                        
+                        <form action="{{ url_for('notas.delete', id=nota.id) }}" method="POST" class="inline-block" onsubmit="return confirm('Tem certeza que deseja excluir esta Nota?');">
+                            <button type="submit" class="text-red-600 hover:text-red-900" title="Excluir"><i class="fas fa-trash-alt"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="px-6 py-10 text-center text-sm text-gray-500 italic">
+                        Nenhuma nota orçamentária encontrada.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function copiarRelatorioWpp() {
+        const notas = [
+            {% for nota in notas %}
+            {
+                numero: "{{ nota.numero_no | escape }}",
+                tipo: "{{ nota.tipo_no | escape }}",
+                oficio: "{{ nota.numero_oficio if nota.numero_oficio else '-' }}",
+                processo: "{{ nota.processo_sei if nota.processo_sei else '-' }}",
+                status: "{{ nota.status }}",
+                dataEmissao: "{{ nota.data_emissao.strftime('%d/%m/%Y') if nota.data_emissao else '-' }}",
+                // ADIÇÃO: Captura do objeto com formatação para evitar quebra do JavaScript
+                objeto: "{{ nota.descricao_resumida | escape | replace('\n', ' ') | replace('\r', '') }}"
+            },
+            {% endfor %}
+        ];
+
+        if (notas.length === 0) {
+            alert("Nenhuma nota orçamentária na lista para copiar.");
+            return;
+        }
+
+        let textoCopiado = "*Relatório de Notas Orçamentárias*\r\n\r\n";
+
+        notas.forEach(n => {
+            let diaSemanaStr = "";
+            if (n.dataEmissao !== '-') {
+                let partes = n.dataEmissao.split('/'); 
+                let dataObj = new Date(partes[2], partes[1] - 1, partes[0]); 
+                let dias = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+                diaSemanaStr = dias[dataObj.getDay()];
+            }
+
+            // ADIÇÃO: O objeto resumido inserido após a data/dia da semana
+            let linha = `📌NO.º ${n.numero} Emitida em: ${n.dataEmissao} - ${diaSemanaStr} - Objeto: ${n.objeto} - Tipo de Nota: ${n.tipo}`;
+            
+            if (n.oficio !== '-' && n.oficio !== '') {
+                linha += ` - Ofício Vinculado: ${n.oficio}`;
+            }
+
+            textoCopiado += linha + "\r\n\r\n";
+        });
+
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(textoCopiado).then(() => {
+                alert("Lista de notas copiada para a área de transferência!\nAgora é só colar no WhatsApp.");
+            }).catch(err => {
+                console.error('Falha ao copiar: ', err);
+                alert("Erro ao copiar o texto. Verifique as permissões do navegador.");
+            });
+        } else {
+            let textArea = document.createElement("textarea");
+            textArea.value = textoCopiado;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-999999px";
+            textArea.style.top = "-999999px";
+            document.body.appendChild(textArea);
+            
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                alert("Lista de notas copiada para a área de transferência!\nAgora é só colar no WhatsApp.");
+            } catch (err) {
+                console.error('Falha ao copiar (fallback): ', err);
+                alert("Erro ao copiar o texto. Tente novamente.");
+            }
+            
+            textArea.remove();
+        }
+    }
+</script>
+{% endblock %}

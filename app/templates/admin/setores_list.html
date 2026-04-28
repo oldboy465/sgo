@@ -1,0 +1,77 @@
+{% extends "base/base.html" %}
+
+{% block title %}Gerenciar Setores - SparkManagerDocs{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+    
+    <div class="md:flex md:items-center md:justify-between mb-6">
+        <div class="flex-1 min-w-0">
+            <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+                Setores & Unidades
+            </h2>
+            <p class="mt-1 text-sm text-gray-500">
+                Unidades administrativas para tramitação de ofícios.
+            </p>
+        </div>
+        <div class="mt-4 flex md:mt-0 md:ml-4">
+            <a href="{{ url_for('admin.setor_create') }}" class="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-brand-600 hover:bg-brand-700">
+                <i class="fas fa-building mr-2"></i> Novo Setor
+            </a>
+        </div>
+    </div>
+
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg border border-gray-200">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sigla</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome da Unidade</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th scope="col" class="relative px-6 py-3"><span class="sr-only">Ações</span></th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for setor in setores %}
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-bold rounded bg-gray-100 text-gray-800 border border-gray-200">
+                                {{ setor.sigla }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                            {{ setor.nome }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if setor.ativo %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    Ativo
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                    Inativo
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <a href="{{ url_for('admin.setor_edit', id=setor.id) }}" class="text-indigo-600 hover:text-indigo-900 mr-4">Editar</a>
+                            
+                            <form action="{{ url_for('admin.setor_delete', id=setor.id) }}" method="POST" onsubmit="return confirm('Deseja excluir o setor {{ setor.sigla }}? Se houver ofícios vinculados, a exclusão será bloqueada.');" class="inline">
+                                <button type="submit" class="text-red-600 hover:text-red-900 bg-transparent border-0 p-0 cursor-pointer">Excluir</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="px-6 py-8 text-center text-gray-500">
+                            Nenhum setor cadastrado.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

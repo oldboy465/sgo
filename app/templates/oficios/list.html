@@ -1,0 +1,234 @@
+{% extends "base/base.html" %}
+{% block title %}Consultar Ofícios - SparkManagerDocs{% endblock %}
+{% block content %}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="sm:flex sm:items-center">
+        <div class="sm:flex-auto">
+            <h1 class="text-xl font-semibold text-gray-900">Ofícios e Processos</h1>
+            <p class="mt-2 text-sm text-gray-700">Consulte, filtre e gerencie os documentos tramitados.</p>
+        </div>
+        <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none flex space-x-3">
+            <button onclick="copiarRelatorioWpp()" class="inline-flex items-center justify-center rounded-md border border-green-600 bg-green-50 px-4 py-2 text-sm font-medium text-green-700 shadow-sm hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 sm:w-auto">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-whatsapp mr-2" viewBox="0 0 16 16">
+                    <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
+                </svg>
+                Copiar WPP
+            </button>
+
+            <a href="{{ url_for('main.relatorio_geral', search=request.args.get('search'), status=request.args.get('status'), setor_atual_id=request.args.get('setor_atual_id')) }}" class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 sm:w-auto">
+                Relatório PDF
+            </a>
+            <a href="{{ url_for('oficios.create') }}" class="inline-flex items-center justify-center rounded-md border border-transparent bg-brand-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 sm:w-auto">
+                Novo Ofício
+            </a>
+        </div>
+    </div>
+
+    <div class="mt-6 bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
+        <form method="GET" action="{{ url_for('oficios.list') }}" class="grid grid-cols-1 gap-y-6 sm:grid-cols-4 sm:gap-x-6">
+            <div class="sm:col-span-1">
+                <label for="search" class="block text-sm font-medium text-gray-700">Buscar</label>
+                <input type="text" name="search" id="search" value="{{ request.args.get('search', '') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm">
+            </div>
+            
+            <div class="sm:col-span-1">
+                <label for="setor_atual_id" class="block text-sm font-medium text-gray-700">Localização Atual</label>
+                <select id="setor_atual_id" name="setor_atual_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm">
+                    <option value="">Todas as Localizações</option>
+                    {% for setor in setores %}
+                    <option value="{{ setor.id }}" {% if request.args.get('setor_atual_id')|string == setor.id|string %}selected{% endif %}>
+                        {{ setor.sigla }} - {{ setor.nome }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="sm:col-span-1">
+                <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
+                <select id="status" name="status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm">
+                    <option value="">Todos</option>
+                    <option value="Em andamento" {% if request.args.get('status') == 'Em andamento' %}selected{% endif %}>Em andamento</option>
+                    <option value="Concluído" {% if request.args.get('status') == 'Concluído' %}selected{% endif %}>Concluído</option>
+                    <option value="Atendido" {% if request.args.get('status') == 'Atendido' %}selected{% endif %}>Atendido</option>
+                    <option value="Substituído" {% if request.args.get('status') == 'Substituído' %}selected{% endif %}>Substituído</option>
+                </select>
+            </div>
+
+            <div class="sm:col-span-1 flex items-end">
+                <button type="submit" class="w-full inline-flex items-center justify-center rounded-md border border-transparent bg-gray-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                    Filtrar
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="mt-8 flex flex-col">
+        <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
+            <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
+                <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+                    <table class="min-w-full divide-y divide-gray-300">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Data</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Nº Ofício / Processo</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Objeto</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Status</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Local Atual</th>
+                                <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6"><span class="sr-only">Ações</span></th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 bg-white">
+                            {% for oficio in oficios.items %}
+                            <tr>
+                                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 sm:pl-6">
+                                    {{ oficio.data_envio.strftime('%d/%m/%Y') if oficio.data_envio else '-' }}
+                                </td>
+                                <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900">
+                                    {{ oficio.numero_oficio }} <br>
+                                    <span class="text-xs text-gray-500">{{ oficio.processo_sei or '-' }}</span>
+                                </td>
+                                <td class="px-3 py-4 text-sm text-gray-500 truncate max-w-xs" title="{{ oficio.titulo }}">
+                                    {{ oficio.titulo }}
+                                </td>
+                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                    <span class="inline-flex rounded-full px-2 text-xs font-semibold leading-5 
+                                        {% if oficio.status == 'Concluído' %} bg-green-100 text-green-800 
+                                        {% elif oficio.status == 'Em andamento' %} bg-blue-100 text-blue-800 
+                                        {% elif oficio.status == 'Atendido' %} bg-yellow-100 text-yellow-800 
+                                        {% elif oficio.status == 'Substituído' %} bg-gray-100 text-gray-800 
+                                        {% else %} bg-gray-100 text-gray-800 {% endif %}">
+                                        {{ oficio.status }}
+                                    </span>
+                                </td>
+                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                    {{ oficio.setor_atual.sigla if oficio.setor_atual else '-' }}
+                                </td>
+                                <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                                    <a href="{{ url_for('oficios.view', id=oficio.id) }}" class="text-blue-600 hover:text-blue-900 mr-3" title="Visualizar Ofício"><i class="fas fa-eye"></i></a>
+                                    
+                                    {% if current_user.perfil == 'Administrador' or current_user.id == oficio.criador_id %}
+                                    <a href="{{ url_for('oficios.edit', id=oficio.id) }}" class="text-brand-600 hover:text-brand-900">Editar</a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="px-3 py-8 text-center text-sm text-gray-500">Nenhum ofício encontrado para os filtros informados.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if oficios.pages > 1 %}
+    <div class="mt-4 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 shadow sm:rounded-lg">
+        <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+            <div>
+                <p class="text-sm text-gray-700">
+                    Página <span class="font-medium">{{ oficios.page }}</span> de <span class="font-medium">{{ oficios.pages }}</span>
+                </p>
+            </div>
+            <div>
+                <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                    <a href="{{ url_for('oficios.list', page=oficios.prev_num, search=request.args.get('search'), status=request.args.get('status'), setor_atual_id=request.args.get('setor_atual_id')) if oficios.has_prev else '#' }}" class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">
+                        <span class="sr-only">Anterior</span>
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" />
+                        </svg>
+                    </a>
+                    
+                    {% for page_num in oficios.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=1) %}
+                        {% if page_num %}
+                            {% if oficios.page == page_num %}
+                                <span aria-current="page" class="relative z-10 inline-flex items-center bg-brand-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600">{{ page_num }}</span>
+                            {% else %}
+                                <a href="{{ url_for('oficios.list', page=page_num, search=request.args.get('search'), status=request.args.get('status'), setor_atual_id=request.args.get('setor_atual_id')) }}" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">{{ page_num }}</a>
+                            {% endif %}
+                        {% else %}
+                            <span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0">...</span>
+                        {% endif %}
+                    {% endfor %}
+
+                    <a href="{{ url_for('oficios.list', page=oficios.next_num, search=request.args.get('search'), status=request.args.get('status'), setor_atual_id=request.args.get('setor_atual_id')) if oficios.has_next else '#' }}" class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">
+                        <span class="sr-only">Próximo</span>
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5-4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+                        </svg>
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function copiarRelatorioWpp() {
+        const oficios = [
+            {% for oficio in oficios.items %}
+            {
+                numero: "{{ oficio.numero_oficio | escape }}",
+                processoSei: "{{ oficio.processo_sei if oficio.processo_sei else '-' }}",
+                // Protegendo o objeto contra quebras de linha que travam o Javascript
+                objeto: "{{ oficio.titulo | escape | replace('\n', ' ') | replace('\r', '') }}",
+                dataEnvio: "{{ oficio.data_envio.strftime('%d/%m/%Y') if oficio.data_envio else '-' }}",
+                setorAtual: "{{ oficio.setor_atual.sigla if oficio.setor_atual else '-' }}",
+                dataChegada: "{{ oficio.data_recebimento.strftime('%d/%m/%Y') if oficio.data_recebimento else '-' }}",
+                horaChegada: "{{ oficio.hora_recebimento.strftime('%H:%M') if oficio.hora_recebimento else '-' }}"
+            },
+            {% endfor %}
+        ];
+
+        if (oficios.length === 0) {
+            alert("Nenhum ofício na lista para copiar.");
+            return;
+        }
+
+        let textoCopiado = "";
+
+        oficios.forEach(o => {
+            let chegada = o.dataChegada !== '-' ? `${o.dataChegada} às ${o.horaChegada}` : '-';
+            textoCopiado += `📌 N.º ofício: ${o.numero} - Proc. SEI: ${o.processoSei} - Objeto: ${o.objeto} - Data de envio: ${o.dataEnvio} - Setor atual: ${o.setorAtual} - Chegada: ${chegada}\r\n\r\n`;
+        });
+
+        // Tenta usar a API moderna primeiro (funciona no Localhost/HTTPS)
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(textoCopiado).then(() => {
+                alert("Lista copiada para a área de transferência!\nAgora é só colar no WhatsApp.");
+            }).catch(err => {
+                console.error('Falha ao copiar: ', err);
+                alert("Erro ao copiar o texto. Verifique as permissões do navegador.");
+            });
+        } else {
+            // PLANO B: Usado para conexões HTTP via IP na rede local (Ex: http://10.14.80.49:5000)
+            let textArea = document.createElement("textarea");
+            textArea.value = textoCopiado;
+            // Torna o textarea invisível na tela
+            textArea.style.position = "fixed";
+            textArea.style.left = "-999999px";
+            textArea.style.top = "-999999px";
+            document.body.appendChild(textArea);
+            
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                alert("Lista copiada para a área de transferência!\nAgora é só colar no WhatsApp.");
+            } catch (err) {
+                console.error('Falha ao copiar (fallback): ', err);
+                alert("Erro ao copiar o texto. Tente novamente.");
+            }
+            
+            textArea.remove();
+        }
+    }
+</script>
+{% endblock %}

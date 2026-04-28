@@ -1,0 +1,124 @@
+{% extends "base/base.html" %}
+{% block title %}Configurações do Sistema - SparkManagerDocs{% endblock %}
+
+{% block content %}
+
+<div class="max-w-4xl mx-auto">
+    
+    <div class="md:flex md:items-center md:justify-between mb-6">
+        <div class="flex-1 min-w-0">
+            <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+                Configurações do Sistema
+            </h2>
+            <p class="mt-1 text-sm text-gray-500">
+                Gerencie parâmetros globais da aplicação e preferências da instituição.
+            </p>
+        </div>
+    </div>
+
+    <form method="POST" action="" class="space-y-8 divide-y divide-gray-200">
+        {{ form.hidden_tag() }}
+
+        <div class="space-y-8 divide-y divide-gray-200 bg-white shadow sm:rounded-lg p-6">
+            <div>
+                <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                    <div class="sm:col-span-6">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900">Identidade Institucional</h3>
+                        <p class="mt-1 text-sm text-gray-500">Essas informações aparecem no cabeçalho dos relatórios e no rodapé do sistema.</p>
+                    </div>
+
+                    <div class="sm:col-span-3">
+                        <label for="nome_sistema" class="block text-sm font-medium text-gray-700">
+                            Nome do Sistema
+                        </label>
+                        <div class="mt-1">
+                            {{ form.nome_sistema(class="shadow-sm focus:ring-brand-500 focus:border-brand-500 block w-full sm:text-sm border-gray-300 rounded-md", placeholder="Ex: SparkManagerDocs") }}
+                        </div>
+                        {% for error in form.nome_sistema.errors %}
+                            <p class="mt-2 text-sm text-red-600">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+
+                    <div class="sm:col-span-3">
+                        <label for="sigla_orgao" class="block text-sm font-medium text-gray-700">
+                            Sigla do Órgão / Instituição
+                        </label>
+                        <div class="mt-1">
+                            {{ form.sigla_orgao(class="shadow-sm focus:ring-brand-500 focus:border-brand-500 block w-full sm:text-sm border-gray-300 rounded-md", placeholder="Ex: UEMA") }}
+                        </div>
+                    </div>
+
+                    <div class="sm:col-span-6">
+                        <label for="nome_departamento" class="block text-sm font-medium text-gray-700">
+                            Nome do Departamento (Para Relatórios)
+                        </label>
+                        <div class="mt-1">
+                            {{ form.nome_departamento(class="shadow-sm focus:ring-brand-500 focus:border-brand-500 block w-full sm:text-sm border-gray-300 rounded-md", placeholder="Ex: Coordenação de Planejamento e Orçamento") }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-8">
+                <div>
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Visualização de Dados</h3>
+                    <p class="mt-1 text-sm text-gray-500">Controle como as listas são exibidas para os usuários.</p>
+                </div>
+                <div class="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                    
+                    <div class="sm:col-span-3">
+                        <label for="itens_por_pagina" class="block text-sm font-medium text-gray-700">
+                            Itens por Página (Tabelas)
+                        </label>
+                        <div class="mt-1">
+                            {{ form.itens_por_pagina(class="shadow-sm focus:ring-brand-500 focus:border-brand-500 block w-full sm:text-sm border-gray-300 rounded-md") }}
+                        </div>
+                        <p class="mt-2 text-xs text-gray-500">Padrão: 10 itens.</p>
+                    </div>
+
+                    <div class="sm:col-span-3">
+                        <label for="email_suporte" class="block text-sm font-medium text-gray-700">
+                            E-mail de Suporte
+                        </label>
+                        <div class="mt-1">
+                            {{ form.email_suporte(class="shadow-sm focus:ring-brand-500 focus:border-brand-500 block w-full sm:text-sm border-gray-300 rounded-md") }}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="pt-8">
+                <div>
+                    <h3 class="text-lg leading-6 font-medium text-red-600">
+                        <i class="fas fa-exclamation-triangle mr-1"></i> Controle de Acesso
+                    </h3>
+                    <p class="mt-1 text-sm text-gray-500">Configurações que afetam a disponibilidade do sistema.</p>
+                </div>
+                
+                <div class="mt-6">
+                    <div class="relative flex items-start">
+                        <div class="flex items-center h-5">
+                            {{ form.modo_manutencao(class="focus:ring-red-500 h-4 w-4 text-red-600 border-gray-300 rounded") }}
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <label for="modo_manutencao" class="font-medium text-gray-700">Ativar Modo de Manutenção</label>
+                            <p class="text-gray-500">Se marcado, apenas Administradores poderão fazer login. Usuários comuns verão uma página de aviso.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="pt-5 flex justify-end">
+            <a href="{{ url_for('main.index') }}" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500">
+                Cancelar
+            </a>
+            <button type="submit" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500">
+                <i class="fas fa-save mr-2"></i> Salvar Configurações
+            </button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}
