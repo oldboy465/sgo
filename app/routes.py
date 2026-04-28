@@ -547,18 +547,25 @@ def edit(id):
         return redirect(url_for('oficios.list'))
     return render_template('oficios/form.html', form=form, oficio=oficio)
 
+# --- ROTA DE EXCLUSÃO DE OFÍCIO (ADICIONADA) ---
 @bp_oficios.route('/excluir/<int:id>', methods=['POST'])
 @login_required
 def delete(id):
     oficio = Oficio.query.get_or_404(id)
     
+    # Segurança: Apenas o criador ou Administradores podem excluir
     if current_user.perfil != 'Administrador' and oficio.criador_id != current_user.id:
         flash('Você não tem permissão para excluir este ofício.', 'danger')
         return redirect(url_for('oficios.list'))
     
-    db.session.delete(oficio)
-    criar_notificacao(f"Ofício {oficio.numero_oficio} excluído.", "danger", url_for('oficios.list'))
-    db.session.commit()
-    
-    flash('Ofício excluído com sucesso!', 'success')
+    try:
+        db.session.delete(oficio)
+        criar_notificacao(f"Ofício {oficio.numero_oficio} excluído.", "danger", url_for('oficios.list'))
+        db.session.commit()
+        flash('Ofício excluído com sucesso!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Erro ao tentar excluir o ofício.', 'danger')
+        print(f"Erro ao excluir: {e}")
+        
     return redirect(url_for('oficios.list'))

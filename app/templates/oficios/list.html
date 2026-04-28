@@ -108,7 +108,13 @@
                                     <a href="{{ url_for('oficios.view', id=oficio.id) }}" class="text-blue-600 hover:text-blue-900 mr-3" title="Visualizar Ofício"><i class="fas fa-eye"></i></a>
                                     
                                     {% if current_user.perfil == 'Administrador' or current_user.id == oficio.criador_id %}
-                                    <a href="{{ url_for('oficios.edit', id=oficio.id) }}" class="text-brand-600 hover:text-brand-900">Editar</a>
+                                    <a href="{{ url_for('oficios.edit', id=oficio.id) }}" class="text-indigo-600 hover:text-indigo-900 mr-3" title="Editar Ofício"><i class="fas fa-edit"></i></a>
+                                    
+                                    <form action="{{ url_for('oficios.delete', id=oficio.id) }}" method="POST" class="inline-block" onsubmit="return confirm('Tem certeza que deseja excluir este Ofício?');">
+                                        <button type="submit" class="text-red-600 hover:text-red-900" title="Excluir Ofício">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
                                     {% endif %}
                                 </td>
                             </tr>
@@ -176,7 +182,6 @@
             {
                 numero: "{{ oficio.numero_oficio | escape }}",
                 processoSei: "{{ oficio.processo_sei if oficio.processo_sei else '-' }}",
-                // Protegendo o objeto contra quebras de linha que travam o Javascript
                 objeto: "{{ oficio.titulo | escape | replace('\n', ' ') | replace('\r', '') }}",
                 dataEnvio: "{{ oficio.data_envio.strftime('%d/%m/%Y') if oficio.data_envio else '-' }}",
                 setorAtual: "{{ oficio.setor_atual.sigla if oficio.setor_atual else '-' }}",
@@ -198,7 +203,6 @@
             textoCopiado += `📌 N.º ofício: ${o.numero} - Proc. SEI: ${o.processoSei} - Objeto: ${o.objeto} - Data de envio: ${o.dataEnvio} - Setor atual: ${o.setorAtual} - Chegada: ${chegada}\r\n\r\n`;
         });
 
-        // Tenta usar a API moderna primeiro (funciona no Localhost/HTTPS)
         if (navigator.clipboard && window.isSecureContext) {
             navigator.clipboard.writeText(textoCopiado).then(() => {
                 alert("Lista copiada para a área de transferência!\nAgora é só colar no WhatsApp.");
@@ -207,10 +211,8 @@
                 alert("Erro ao copiar o texto. Verifique as permissões do navegador.");
             });
         } else {
-            // PLANO B: Usado para conexões HTTP via IP na rede local (Ex: http://10.14.80.49:5000)
             let textArea = document.createElement("textarea");
             textArea.value = textoCopiado;
-            // Torna o textarea invisível na tela
             textArea.style.position = "fixed";
             textArea.style.left = "-999999px";
             textArea.style.top = "-999999px";
