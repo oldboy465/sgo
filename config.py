@@ -66,25 +66,27 @@ class ProductionConfig(Config):
     """
     DEBUG = False
     SQLALCHEMY_ECHO = False
-    
-    # Em produção, forçamos HTTPS nos cookies (O Vercel usa HTTPS por padrão)
     SESSION_COOKIE_SECURE = True 
     
-    # Captura a URL do banco do Vercel Postgres ou de outra variável de ambiente
+    # Captura a URL injetada pelo Neon
     db_url = os.environ.get('POSTGRES_URL') or os.environ.get('DATABASE_URL')
     
     if db_url:
-        # SQLAlchemy 1.4+ exige 'postgresql://' em vez de 'postgres://'
+        # 1. Corrige o prefixo para o SQLAlchemy moderno
         if db_url.startswith("postgres://"):
             db_url = db_url.replace("postgres://", "postgresql://", 1)
+            
+        # 2. REMOVE o parâmetro que quebra o psycopg2 no Vercel
+        db_url = db_url.replace("channel_binding=require&", "")
+        db_url = db_url.replace("?channel_binding=require", "")
+        db_url = db_url.replace("&channel_binding=require", "")
+        
         SQLALCHEMY_DATABASE_URI = db_url
     else:
-        # Fallback para banco em MEMÓRIA para o Vercel não dar erro de leitura/escrita
         SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
-        # =======================================================
-        # CORREÇÃO CRÍTICA: Remove opções de pool incompatíveis com SQLite
-        # =======================================================
-        SQLALCHEMY_ENGINE_OPTIONS = {}
+        
+    # Mantém o bloqueio do pool para não dar erro se cair no SQLite
+    SQLALCHEMY_ENGINE_OPTIONS = {}
 
 
 class TestingConfig(Config):
