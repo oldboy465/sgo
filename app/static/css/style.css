@@ -276,7 +276,7 @@
     border-color: var(--primary);
 }
 
-/********** Template CSS **********/
+/********** Template CSS (Bloco Repetidoconforme solicitado) **********/
 :root {
     --primary: #009CFF;
     --light: #F3F6F9;
@@ -556,7 +556,6 @@
 
 /* ==========================================================================
    CUSTOM AUTHENTICATION ANIMATIONS & DYNAMIC BACKGROUND
-   Adicionado a partir daqui
    ========================================================================== */
 
 /* Fundo Dinâmico Sutil (Substitui partículas via JS por performance extrema) */
@@ -595,3 +594,36 @@
 .delay-300 { animation-delay: 300ms; }
 .delay-400 { animation-delay: 400ms; }
 .delay-500 { animation-delay: 500ms; }
+
+/* ==========================================================================
+   MELHORIAS DE RESPONSIVIDADE MOBILE (Adicionado para Smartphone)
+   ========================================================================== */
+
+@media (max-width: 767.98px) {
+    /* Garante que o conteúdo principal não tenha margem quando a sidebar está fechada */
+    .flex-col.flex-1 {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+    
+    /* Melhora a visualização de tabelas em telas pequenas */
+    .table-responsive {
+        border: 0;
+    }
+    
+    /* Aumenta botões para facilitar o toque */
+    .btn {
+        padding: 0.6rem 1rem;
+    }
+    
+    /* Ajusta o padding do conteúdo principal */
+    main .max-w-7xl {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+
+    /* Esconde a logo da sidebar quando colapsada (se necessário) */
+    .sidebar-header {
+        justify-content: space-between;
+    }
+}
