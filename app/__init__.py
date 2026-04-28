@@ -6,6 +6,7 @@ from datetime import datetime
 
 # --- IMPORTAÇÃO DOS MODELOS E DB ---
 from app.models import db, User, Configuracao, Notificacao
+from config import config_dict # IMPORTAÇÃO ADICIONADA PARA GERENCIAR CONFIGURAÇÕES
 
 # Inicialização das outras extensões
 migrate = Migrate()
@@ -21,24 +22,17 @@ def create_app(config_name='default'):
     app = Flask(__name__)
 
     # ==========================================================================
-    # 1. CONFIGURAÇÃO (TRAVA DE SEGURANÇA DE CAMINHO)
+    # 1. CONFIGURAÇÃO DINÂMICA (SUPORTE A VERCEL E POSTGRES)
     # ==========================================================================
-    app.config['SECRET_KEY'] = 'chave-secreta-desenvolvimento-sparkdocs'
+    # Se a variável VERCEL existir no ambiente, força o modo produção
+    if os.environ.get('VERCEL'):
+        config_name = 'production'
+
+    # Carrega as configurações do arquivo config.py com base no ambiente
+    app.config.from_object(config_dict[config_name])
     
-    # Pega o diretório onde este arquivo (__init__.py) está e sobe um nível para a raiz
-    basedir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
-    
-    # Define o nome exato do SEU banco de dados original
-    db_name = 'sparkmanager_dev.db'
-    
-    # Cria o caminho completo (Ex: C:\Users\...\sparkmanager_dev.db)
-    db_path = os.path.join(basedir, db_name)
-    
-    # Configura a URI usando o caminho absoluto
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    
-    print(f"--- CONECTANDO AO BANCO DE DADOS EM: {db_path} ---")
+    print(f"--- MODO DE CONFIGURAÇÃO: {config_name.upper()} ---")
+    print(f"--- CONECTANDO AO BANCO DE DADOS: {app.config.get('SQLALCHEMY_DATABASE_URI')} ---")
 
     # 2. Inicializa as Extensões com a App
     db.init_app(app)

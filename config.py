@@ -62,20 +62,25 @@ class DevelopmentConfig(Config):
 
 class ProductionConfig(Config):
     """
-    Ambiente de Produção (Hostgator Linux).
+    Ambiente de Produção (Hostgator Linux / Vercel).
     """
     DEBUG = False
     SQLALCHEMY_ECHO = False
     
-    # Em produção, forçamos HTTPS nos cookies
-    SESSION_COOKIE_SECURE = False # Mude para True quando instalar o SSL na Hostgator
+    # Em produção, forçamos HTTPS nos cookies (O Vercel usa HTTPS por padrão)
+    SESSION_COOKIE_SECURE = True 
     
-    # Exemplo de Connection String para MySQL (Comente o SQLite e descomente abaixo na Hostgator)
-    # SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://usuario:senha@localhost/nome_banco'
+    # Captura a URL do banco do Vercel Postgres ou de outra variável de ambiente
+    db_url = os.environ.get('POSTGRES_URL') or os.environ.get('DATABASE_URL')
     
-    # Fallback para SQLite de Produção se ainda não tiver MySQL configurado
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'sqlite:///' + os.path.join(basedir, 'sparkmanager_prod.db')
+    if db_url:
+        # SQLAlchemy 1.4+ exige 'postgresql://' em vez de 'postgres://'
+        if db_url.startswith("postgres://"):
+            db_url = db_url.replace("postgres://", "postgresql://", 1)
+        SQLALCHEMY_DATABASE_URI = db_url
+    else:
+        # Fallback para SQLite de Produção se ainda não tiver banco configurado
+        SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'sparkmanager_prod.db')
 
 
 class TestingConfig(Config):
