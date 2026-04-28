@@ -79,8 +79,8 @@ class ProductionConfig(Config):
             db_url = db_url.replace("postgres://", "postgresql://", 1)
         SQLALCHEMY_DATABASE_URI = db_url
     else:
-        # Fallback para SQLite de Produção se ainda não tiver banco configurado
-        SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'sparkmanager_prod.db')
+        # Fallback para banco em MEMÓRIA para o Vercel não dar erro de leitura/escrita
+        SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
 
 
 class TestingConfig(Config):
