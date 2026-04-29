@@ -80,7 +80,7 @@ def create_app(config_name='default'):
             config = Configuracao.query.first()
             if not config:
                 try:
-                    config = Configuracao(nome_sistema='SparkManagerDocs', sigla_orgao='UEMA')
+                    config = Configuracao(nome_sistema='SGO', sigla_orgao='UEMA')
                 except:
                     config = None
             

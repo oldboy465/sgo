@@ -1,5 +1,5 @@
 {% extends "base/base.html" %}
-{% block title %}Configurações do Sistema - SparkManagerDocs{% endblock %}
+{% block title %}Configurações do Sistema - SGO{% endblock %}
 
 {% block content %}
 
@@ -32,7 +32,7 @@
                             Nome do Sistema
                         </label>
                         <div class="mt-1">
-                            {{ form.nome_sistema(class="shadow-sm focus:ring-brand-500 focus:border-brand-500 block w-full sm:text-sm border-gray-300 rounded-md", placeholder="Ex: SparkManagerDocs") }}
+                            {{ form.nome_sistema(class="shadow-sm focus:ring-brand-500 focus:border-brand-500 block w-full sm:text-sm border-gray-300 rounded-md", placeholder="Ex: SGO") }}
                         </div>
                         {% for error in form.nome_sistema.errors %}
                             <p class="mt-2 text-sm text-red-600">{{ error }}</p>

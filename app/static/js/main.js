@@ -1,5 +1,5 @@
 /**
- * Main JS para SparkManagerDocs
+ * Main JS para SGO
  * Controla comportamentos de interface e responsividade
  */
 

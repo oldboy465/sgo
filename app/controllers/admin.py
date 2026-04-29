@@ -264,7 +264,7 @@ def configuracoes():
     
     # Preenchimento padrão (Mock) para não ficar vazio na tela
     if request.method == 'GET':
-        form.nome_sistema.data = "SparkManagerDocs"
+        form.nome_sistema.data = "SGO"
         form.sigla_orgao.data = "UEMA"
         form.itens_por_pagina.data = 10
         form.nome_departamento.data = "Coordenação de Planejamento"

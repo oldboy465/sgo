@@ -113,7 +113,7 @@ class Configuracao(db.Model):
     __tablename__ = 'configuracoes'
 
     id = db.Column(db.Integer, primary_key=True)
-    nome_sistema = db.Column(db.String(100), default='SparkManagerDocs')
+    nome_sistema = db.Column(db.String(100), default='SGO')
     sigla_orgao = db.Column(db.String(20), default='UEMA')
     nome_departamento = db.Column(db.String(100), default='Coordenação de Planejamento e Orçamento')
 

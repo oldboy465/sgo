@@ -42,7 +42,7 @@ class Config:
     # ==========================================================================
     # PARÂMETROS DE NEGÓCIO (CONSTANTES GLOBAIS)
     # ==========================================================================
-    SYSTEM_NAME = 'SparkManagerDocs'
+    SYSTEM_NAME = 'SGO'
     ORGANIZATION_NAME = 'Universidade Estadual do Maranhão - UEMA'
     ROWS_PER_PAGE = 15 # Paginação padrão para tabelas
     TIMEZONE = 'America/Sao_Paulo'

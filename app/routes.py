@@ -42,7 +42,7 @@ def inject_globals():
     config = Configuracao.query.first()
     if not config:
         config = Configuracao(
-            nome_sistema='SparkManagerDocs',
+            nome_sistema='SGO',
             sigla_orgao='UEMA',
             logo_url='https://upload.wikimedia.org/wikipedia/commons/2/20/Bras%C3%A3o_UEMA.png'
         )
