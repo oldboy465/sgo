@@ -200,7 +200,8 @@ class OficioForm(FlaskForm):
         ('Em andamento', 'Em andamento'),
         ('Concluído', 'Concluído'),
         ('Atendido', 'Atendido'),
-        ('Substituído', 'Substituído')
+        ('Substituído', 'Substituído'),
+        ('Cancelada', 'Cancelada')
     ], default='Em andamento')
 
     # Campo de Ação Tomada / Despacho
@@ -256,7 +257,8 @@ class NotaOrcamentariaForm(FlaskForm):
         ('Liberada', 'Liberada'),
         ('Assinada', 'Assinada'),
         ('Associada', 'Associada'),
-        ('Realizada', 'Realizada')
+        ('Realizada', 'Realizada'),
+        ('Cancelada', 'Cancelada')
     ], validators=[DataRequired()])
     observacoes = TextAreaField('Observações', validators=[Optional(), Length(max=5000)])
     submit = SubmitField('Salvar Nota Orçamentária')

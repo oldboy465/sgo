@@ -33,6 +33,7 @@
                 <option value="Assinada" {% if request.args.get('status') == 'Assinada' %}selected{% endif %}>Assinada</option>
                 <option value="Associada" {% if request.args.get('status') == 'Associada' %}selected{% endif %}>Associada</option>
                 <option value="Realizada" {% if request.args.get('status') == 'Realizada' %}selected{% endif %}>Realizada</option>
+                <option value="Cancelada" {% if request.args.get('status') == 'Cancelada' %}selected{% endif %}>Cancelada</option>
             </select>
         </div>
         <div class="flex space-x-2">
@@ -81,6 +82,8 @@
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Associada</span>
                         {% elif nota.status == 'Realizada' %}
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Realizada</span>
+                        {% elif nota.status == 'Cancelada' %}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Cancelada</span>
                         {% endif %}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">

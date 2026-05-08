@@ -39,6 +39,7 @@
                         {% elif nota.status == 'Assinada' %} bg-purple-100 text-purple-800
                         {% elif nota.status == 'Associada' %} bg-yellow-100 text-yellow-800
                         {% elif nota.status == 'Realizada' %} bg-green-100 text-green-800
+                        {% elif nota.status == 'Cancelada' %} bg-red-100 text-red-800
                         {% else %} bg-gray-200 text-gray-800 {% endif %}">
                         {{ nota.status }}
                     </span>
