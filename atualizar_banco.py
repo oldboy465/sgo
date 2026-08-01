@@ -1,24 +1,32 @@
 import sqlite3
+import os
 
-conn = sqlite3.connect('sparkmanager_dev.db')
+# Caminho do banco local de desenvolvimento
+basedir = os.path.abspath(os.path.dirname(__file__))
+db_path = os.path.join(basedir, 'sparkmanager_dev.db')
+
+conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 
-print("Iniciando atualização do banco de dados...")
+print("Iniciando atualização da estrutura do banco de dados SQLite local...")
 
+# =========================================================================
+# 1. ADIÇÃO DE COLUNAS NA TABELA DE OFÍCIOS
+# =========================================================================
 try:
     cursor.execute("ALTER TABLE oficios ADD COLUMN data_recebimento DATE;")
-    print("✅ Coluna 'data_recebimento' adicionada com sucesso.")
+    print("✅ Coluna 'data_recebimento' adicionada com sucesso em 'oficios'.")
 except sqlite3.OperationalError as e:
-    print(f"⚠️ Aviso: {e} (A coluna já pode existir)")
+    print(f"⚠️ Aviso em 'oficios.data_recebimento': {e} (A coluna já pode existir)")
 
 try:
     cursor.execute("ALTER TABLE oficios ADD COLUMN hora_recebimento TIME;")
-    print("✅ Coluna 'hora_recebimento' adicionada com sucesso.")
+    print("✅ Coluna 'hora_recebimento' adicionada com sucesso em 'oficios'.")
 except sqlite3.OperationalError as e:
-    print(f"⚠️ Aviso: {e} (A coluna já pode existir)")
+    print(f"⚠️ Aviso em 'oficios.hora_recebimento': {e} (A coluna já pode existir)")
 
 # =========================================================================
-# ADIÇÃO: TABELA DE LOTAÇÃO (UNIDADE DE TRABALHO DO USUÁRIO)
+# 2. ADIÇÃO DA TABELA DE LOTAÇÕES (UNIDADE FÍSICA DE TRABALHO)
 # =========================================================================
 try:
     cursor.execute("""
@@ -31,14 +39,20 @@ try:
     """)
     print("✅ Tabela 'lotacoes' verificada/criada com sucesso.")
 except sqlite3.OperationalError as e:
-    print(f"⚠️ Erro ao criar tabela de lotacoes: {e}")
+    print(f"⚠️ Erro ao criar tabela de lotações: {e}")
 
+# =========================================================================
+# 3. VINCULAÇÃO DA LOTAÇÃO À TABELA DE USUÁRIOS (users.lotacao_id)
+# =========================================================================
 try:
     cursor.execute("ALTER TABLE users ADD COLUMN lotacao_id INTEGER REFERENCES lotacoes(id);")
     print("✅ Coluna 'lotacao_id' adicionada à tabela 'users' com sucesso.")
 except sqlite3.OperationalError as e:
-    print(f"⚠️ Aviso: {e} (A coluna 'lotacao_id' já pode existir na tabela 'users')")
+    print(f"⚠️ Aviso em 'users.lotacao_id': {e} (A coluna já pode existir)")
 
+# =========================================================================
+# 4. ADIÇÃO DA TABELA DE NOTAS ORÇAMENTÁRIAS
+# =========================================================================
 try:
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS notas_orcamentarias (
@@ -62,7 +76,7 @@ except sqlite3.OperationalError as e:
     print(f"⚠️ Erro ao criar tabela de notas: {e}")
 
 # =========================================================================
-# CRIAÇÃO DA TABELA DE RELACIONAMENTO USUÁRIO <-> SETOR (TRAMITAÇÃO)
+# 5. TABELA DE ASSOCIAÇÃO MUITOS-PARA-MUITOS (USUÁRIO <-> SETORES AUTORIZADOS)
 # =========================================================================
 try:
     cursor.execute("""
@@ -78,6 +92,20 @@ try:
 except sqlite3.OperationalError as e:
     print(f"⚠️ Erro ao criar tabela de associação usuario_setor: {e}")
 
+# =========================================================================
+# 6. INSERÇÃO DE LOTAÇÃO PADRÃO (FALLBACK PARA USUÁRIOS EXISTENTES)
+# =========================================================================
+try:
+    cursor.execute("INSERT OR IGNORE INTO lotacoes (id, nome, sigla, ativo) VALUES (1, 'Gabinete / Geral', 'GABINETE', 1);")
+    cursor.execute("UPDATE users SET lotacao_id = 1 WHERE lotacao_id IS NULL;")
+    print("✅ Lotação padrão atribuída aos usuários pré-existentes com sucesso.")
+except sqlite3.OperationalError as e:
+    print(f"⚠️ Erro ao atualizar lotação padrão dos usuários: {e}")
+
 conn.commit()
 conn.close()
-print("🎉 Atualização concluída! Você já pode rodar o run.py novamente.")
+
+print("\n==================================================================")
+print("🎉 ATUALIZAÇÃO CONCLUÍDA! O banco SQLite está pronto.")
+print("Agora você pode rodar 'python run.py' novamente sem erros de banco.")
+print("==================================================================")

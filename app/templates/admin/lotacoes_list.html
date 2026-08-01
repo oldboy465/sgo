@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Unidades de Lotação{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-6">
+    <!-- Cabeçalho -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <div>
+            <h1 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                <i class="fa-solid fa-building-user text-blue-600"></i> Lotações (Unidades de Trabalho)
+            </h1>
+            <p class="text-xs text-slate-500 mt-1">Cadastre as unidades formais de trabalho onde os servidores desempenham suas atribuições.</p>
+        </div>
+        <a href="{{ url_for('admin.lotacao_create') }}" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-lg transition-colors shadow-sm">
+            <i class="fa-solid fa-plus"></i> Nova Lotação
+        </a>
+    </div>
+
+    <!-- Tabela de Lotações em Tailwind CSS -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="table-responsive">
+            <table class="table-tailwind">
+                <thead>
+                    <tr>
+                        <th>Sigla</th>
+                        <th>Nome da Unidade</th>
+                        <th>Servidores Vinculados</th>
+                        <th>Status</th>
+                        <th class="text-right">Ações</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for lotacao in lotacoes %}
+                    <tr class="hover:bg-slate-50/80 transition-colors">
+                        <td>
+                            <span class="inline-block px-2.5 py-1 rounded-md text-xs font-bold bg-slate-100 text-slate-800 border border-slate-200 font-mono">
+                                {{ lotacao.sigla }}
+                            </span>
+                        </td>
+                        <td class="font-semibold text-xs text-slate-800">
+                            {{ lotacao.nome }}
+                        </td>
+                        <td>
+                            <span class="text-xs text-slate-600 font-medium">
+                                <i class="fa-solid fa-users text-slate-400 mr-1 text-[11px]"></i>
+                                {{ lotacao.servidores|length }} servidor(es)
+                            </span>
+                        </td>
+                        <td>
+                            {% if lotacao.ativo %}
+                                <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Ativa
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-full">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Inativa
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <a href="{{ url_for('admin.lotacao_edit', id=lotacao.id) }}" class="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition-colors" title="Editar Lotação">
+                                    <i class="fa-solid fa-pen-to-square text-sm"></i>
+                                </a>
+                                <form action="{{ url_for('admin.lotacao_delete', id=lotacao.id) }}" method="POST" onsubmit="return confirm('Deseja excluir a lotação {{ lotacao.sigla }}?');" class="inline">
+                                    <button type="submit" class="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors" title="Excluir Lotação">
+                                        <i class="fa-solid fa-trash-can text-sm"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-8 text-slate-400 text-xs">Nenhuma lotação cadastrada até o momento.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

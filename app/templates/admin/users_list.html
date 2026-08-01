@@ -1,87 +1,96 @@
-{% extends "base/base.html" %}
+{% extends "base.html" %}
 
-{% block title %}Gerenciar Usuários - SGO{% endblock %}
+{% block title %}Gestão de Usuários{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto">
-    
-    <div class="md:flex md:items-center md:justify-between mb-6">
-        <div class="flex-1 min-w-0">
-            <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-                Usuários do Sistema
-            </h2>
-            <p class="mt-1 text-sm text-gray-500">
-                Gerencie quem tem acesso ao SGO e seus níveis de permissão.
-            </p>
+<div class="max-w-7xl mx-auto space-y-6">
+    <!-- Cabeçalho e Ações Principais -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <div>
+            <h1 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                <i class="fa-solid fa-users-gear text-blue-600"></i> Gestão de Usuários
+            </h1>
+            <p class="text-xs text-slate-500 mt-1">Gerencie credenciais, perfil de acesso, lotação de trabalho e permissões de trâmite por setor.</p>
         </div>
-        <div class="mt-4 flex md:mt-0 md:ml-4">
-            <a href="{{ url_for('admin.user_create') }}" class="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500">
-                <i class="fas fa-plus mr-2"></i> Novo Usuário
-            </a>
-        </div>
+        <a href="{{ url_for('admin.user_create') }}" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-lg transition-colors shadow-sm">
+            <i class="fa-solid fa-user-plus"></i> Novo Usuário
+        </a>
     </div>
 
-    <div class="bg-white shadow overflow-hidden sm:rounded-lg border border-gray-200">
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
+    <!-- Tabela de Usuários Estilizada com Tailwind CSS -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="table-responsive">
+            <table class="table-tailwind">
+                <thead>
                     <tr>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuário</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Perfil</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cadastro</th>
-                        <th scope="col" class="relative px-6 py-3"><span class="sr-only">Ações</span></th>
+                        <th>Nome / E-mail</th>
+                        <th>Lotação Oficial</th>
+                        <th>Perfil</th>
+                        <th>Setores de Trâmite</th>
+                        <th>Status</th>
+                        <th class="text-right">Ações</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody class="divide-y divide-slate-100">
                     {% for user in users.items %}
-                    <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0 h-10 w-10">
-                                    <img class="h-10 w-10 rounded-full object-cover" src="https://ui-avatars.com/api/?name={{ user.nome }}&background=random" alt="">
+                    <tr class="hover:bg-slate-50/80 transition-colors">
+                        <td>
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-full bg-slate-100 text-slate-700 font-bold flex items-center justify-center text-xs uppercase border border-slate-200">
+                                    {{ user.nome[:2] }}
                                 </div>
-                                <div class="ml-4">
-                                    <div class="text-sm font-medium text-gray-900">{{ user.nome }}</div>
-                                    <div class="text-sm text-gray-500">{{ user.email }}</div>
+                                <div>
+                                    <span class="font-semibold text-xs text-slate-800 block">{{ user.nome }}</span>
+                                    <span class="text-[11px] text-slate-400 block mt-0.5">{{ user.email }}</span>
                                 </div>
                             </div>
                         </td>
-                        
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            {% if user.perfil == 'Administrador' %}
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                                    <i class="fas fa-shield-alt mr-1 mt-0.5"></i> Admin
+                        <td>
+                            {% if user.lotacao_trabalho %}
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                                    <i class="fa-solid fa-building text-slate-400 text-[10px]"></i>
+                                    {{ user.lotacao_trabalho.sigla }}
                                 </span>
                             {% else %}
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                    Usuário
-                                </span>
+                                <span class="text-xs text-slate-400 italic">Não alocado</span>
                             {% endif %}
                         </td>
-
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td>
+                            <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold {% if user.perfil == 'Administrador' %}bg-purple-100 text-purple-800 border border-purple-200{% else %}bg-blue-100 text-blue-800 border border-blue-200{% endif %}">
+                                {{ user.perfil }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="flex flex-wrap gap-1 max-w-xs">
+                                {% for s in user.setores_permitidos %}
+                                    <span class="text-[10px] bg-slate-100 text-slate-600 border border-slate-200 px-1.5 py-0.5 rounded font-mono">
+                                        {{ s.sigla }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-xs text-slate-400 italic">Nenhum setor atrelado</span>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        <td>
                             {% if user.ativo %}
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Ativo</span>
+                                <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Ativo
+                                </span>
                             {% else %}
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Inativo</span>
+                                <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-full">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Inativo
+                                </span>
                             {% endif %}
                         </td>
-
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ user.created_at.strftime('%d/%m/%Y') }}
-                        </td>
-
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div class="flex items-center justify-end space-x-3">
-                                <a href="{{ url_for('admin.user_edit', id=user.id) }}" class="text-indigo-600 hover:text-indigo-900" title="Editar">
-                                    <i class="fas fa-edit"></i>
+                        <td class="text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <a href="{{ url_for('admin.user_edit', id=user.id) }}" class="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition-colors" title="Editar Usuário">
+                                    <i class="fa-solid fa-pen-to-square text-sm"></i>
                                 </a>
-                                
-                                {% if current_user.id != user.id %}
-                                <form action="{{ url_for('admin.user_delete', id=user.id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.');" class="inline">
-                                    <button type="submit" class="text-red-600 hover:text-red-900 bg-transparent border-0 p-0 cursor-pointer" title="Excluir">
-                                        <i class="fas fa-trash"></i>
+                                {% if user.id != current_user.id %}
+                                <form action="{{ url_for('admin.user_delete', id=user.id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir o usuário {{ user.nome }}?');" class="inline">
+                                    <button type="submit" class="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors" title="Excluir Usuário">
+                                        <i class="fa-solid fa-trash-can text-sm"></i>
                                     </button>
                                 </form>
                                 {% endif %}
@@ -90,43 +99,24 @@
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="5" class="px-6 py-12 text-center text-gray-500">
-                            <i class="fas fa-users text-4xl mb-3 text-gray-300"></i>
-                            <p>Nenhum usuário encontrado.</p>
-                        </td>
+                        <td colspan="6" class="text-center py-8 text-slate-400 text-xs">Nenhum usuário cadastrado até o momento.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-        
+
+        <!-- Paginação -->
         {% if users.pages > 1 %}
-        <div class="bg-white px-4 py-3 border-t border-gray-200 flex items-center justify-between sm:px-6">
-            <div class="flex-1 flex justify-between sm:hidden">
-                <a href="{{ url_for('admin.users_list', page=users.prev_num) if users.has_prev else '#' }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Anterior</a>
-                <a href="{{ url_for('admin.users_list', page=users.next_num) if users.has_next else '#' }}" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Próximo</a>
-            </div>
-            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                <div>
-                    <p class="text-sm text-gray-700">
-                        Mostrando <span class="font-medium">{{ users.page }}</span> de <span class="font-medium">{{ users.pages }}</span> páginas.
-                    </p>
-                </div>
-                <div>
-                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                        {% for page_num in users.iter_pages() %}
-                            {% if page_num %}
-                                {% if users.page == page_num %}
-                                    <span class="relative inline-flex items-center px-4 py-2 border border-brand-500 bg-brand-50 text-sm font-medium text-brand-600">{{ page_num }}</span>
-                                {% else %}
-                                    <a href="{{ url_for('admin.users_list', page=page_num) }}" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">{{ page_num }}</a>
-                                {% endif %}
-                            {% else %}
-                                <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">...</span>
-                            {% endif %}
-                        {% endfor %}
-                    </nav>
-                </div>
+        <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+            <span class="text-xs text-slate-500">Página {{ users.page }} de {{ users.pages }}</span>
+            <div class="flex items-center gap-1">
+                {% if users.has_prev %}
+                <a href="{{ url_for('admin.users_list', page=users.prev_num) }}" class="px-3 py-1.5 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-md text-xs font-semibold transition-colors">Anterior</a>
+                {% endif %}
+                {% if users.has_next %}
+                <a href="{{ url_for('admin.users_list', page=users.next_num) }}" class="px-3 py-1.5 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-md text-xs font-semibold transition-colors">Próxima</a>
+                {% endif %}
             </div>
         </div>
         {% endif %}

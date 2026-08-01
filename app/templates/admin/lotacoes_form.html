@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-6">
+    <!-- Cabeçalho -->
+    <div class="flex items-center justify-between bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <div>
+            <h1 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                <i class="fa-solid fa-building text-blue-600"></i> {{ title }}
+            </h1>
+            <p class="text-xs text-slate-500 mt-1">Defina o nome oficial e a sigla da unidade de trabalho na UEMA.</p>
+        </div>
+        <a href="{{ url_for('admin.lotacoes_list') }}" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold text-xs rounded-lg transition-colors">
+            <i class="fa-solid fa-arrow-left mr-1.5"></i> Voltar
+        </a>
+    </div>
+
+    <!-- Formulário Estilizado -->
+    <form method="POST" class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
+        {{ form.hidden_tag() }}
+
+        <div class="space-y-4">
+            <div>
+                <label class="form-label">{{ form.nome.label }}</label>
+                {{ form.nome(class="form-control" + (" border-red-500" if form.nome.errors else ""), placeholder="Ex: Pró-Reitoria de Planejamento e Administração") }}
+                {% for error in form.nome.errors %}
+                    <span class="text-xs text-red-500 mt-1 block">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            <div>
+                <label class="form-label">{{ form.sigla.label }}</label>
+                {{ form.sigla(class="form-control uppercase" + (" border-red-500" if form.sigla.errors else ""), placeholder="Ex: PROPLAD") }}
+                {% for error in form.sigla.errors %}
+                    <span class="text-xs text-red-500 mt-1 block">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            <div class="pt-2">
+                <label class="inline-flex items-center gap-2 cursor-pointer">
+                    {{ form.ativo(class="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500") }}
+                    <span class="text-xs font-semibold text-slate-700">{{ form.ativo.label.text }}</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="border-t border-slate-100 pt-6 flex items-center justify-end gap-3">
+            <a href="{{ url_for('admin.lotacoes_list') }}" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold text-xs rounded-lg transition-colors">
+                Cancelar
+            </a>
+            {{ form.submit(class="btn btn-primary px-6 py-2.5 font-semibold text-xs rounded-lg shadow-sm cursor-pointer") }}
+        </div>
+    </form>
+</div>
+{% endblock %}
