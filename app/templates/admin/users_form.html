@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "base/base.html" %}
 
 {% block title %}{{ title }}{% endblock %}
 
@@ -10,18 +10,18 @@
             <h1 class="text-xl font-bold text-slate-800 flex items-center gap-2">
                 <i class="fa-solid fa-user-gear text-blue-600"></i> {{ title }}
             </h1>
-            <p class="text-xs text-slate-500 mt-1">Preencha os dados e defina a separação entre lotação oficial e permissões de trâmite.</p>
+            <p class="text-xs text-slate-500 mt-1">Preencha os dados do servidor, definindo a lotação oficial e os setores de trâmite autorizados.</p>
         </div>
         <a href="{{ url_for('admin.users_list') }}" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold text-xs rounded-lg transition-colors">
             <i class="fa-solid fa-arrow-left mr-1.5"></i> Voltar para Lista
         </a>
     </div>
 
-    <!-- Formulário Redesenhado em Tailwind -->
+    <!-- Formulário Principal -->
     <form method="POST" class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
         {{ form.hidden_tag() }}
 
-        <!-- Bloco 1: Informações Pessoais e Credenciais -->
+        <!-- Bloco 1: Identificação e Acesso -->
         <div>
             <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 border-b border-slate-100 pb-2">
                 1. Identificação e Acesso
@@ -46,7 +46,7 @@
                 <div>
                     <label class="form-label">{{ form.password.label }}</label>
                     {{ form.password(class="form-control" + (" border-red-500" if form.password.errors else "")) }}
-                    <span class="text-[11px] text-slate-400 mt-1 block">Deixe em branco na edição se não desejar alterar.</span>
+                    <span class="text-[11px] text-slate-400 mt-1 block">Deixe em branco na edição se não desejar alterar a senha.</span>
                     {% for error in form.password.errors %}
                         <span class="text-xs text-red-500 mt-1 block">{{ error }}</span>
                     {% endfor %}
@@ -62,7 +62,7 @@
             </div>
         </div>
 
-        <!-- Bloco 2: Lotação vs Setores Autorizados (Conceito Chave) -->
+        <!-- Bloco 2: Lotação vs Setores Autorizados -->
         <div>
             <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 border-b border-slate-100 pb-2">
                 2. Lotação Institucional e Escopo de Trâmite
@@ -73,7 +73,7 @@
                     <label class="form-label font-bold text-blue-900 flex items-center gap-1.5">
                         <i class="fa-solid fa-building text-blue-600"></i> {{ form.lotacao_id.label }}
                     </label>
-                    <p class="text-xs text-blue-700 mb-2">Unidade física/administrativa onde o servidor está alocado e exerce suas funções diárias na UEMA.</p>
+                    <p class="text-xs text-blue-700 mb-2">Unidade física/administrativa onde o servidor está alocado e exerce suas atribuições diárias na UEMA.</p>
                     {{ form.lotacao_id(class="form-select border-blue-200 focus:border-blue-500") }}
                     {% for error in form.lotacao_id.errors %}
                         <span class="text-xs text-red-500 mt-1 block">{{ error }}</span>
@@ -85,7 +85,7 @@
                     <label class="form-label font-bold text-slate-800 flex items-center gap-1.5">
                         <i class="fa-solid fa-sitemap text-slate-500"></i> {{ form.setores.label }}
                     </label>
-                    <p class="text-xs text-slate-500 mb-2">Marque os setores aos quais este usuário terá permissão para visualizar e tramitar ofícios no sistema.</p>
+                    <p class="text-xs text-slate-500 mb-2">Selecione os setores cujos processos este usuário terá permissão para visualizar e tramitar no SGO.</p>
                     
                     <div class="checkbox-list-container">
                         {{ form.setores() }}
@@ -117,7 +117,7 @@
             </div>
         </div>
 
-        <!-- Botoes de Ação -->
+        <!-- Botões de Ação -->
         <div class="border-t border-slate-100 pt-6 flex items-center justify-end gap-3">
             <a href="{{ url_for('admin.users_list') }}" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold text-xs rounded-lg transition-colors">
                 Cancelar

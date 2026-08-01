@@ -4,16 +4,15 @@ from functools import wraps
 from app.models import db, User, Setor, Lotacao, TipoProcesso
 from app.forms import UserForm, SetorForm, LotacaoForm, TipoProcessoForm, ConfiguracaoForm
 
-# Cria o Blueprint (Módulo Administrativo)
+# Cria o Blueprint do Módulo Administrativo
 bp = Blueprint('admin', __name__)
 
 # ==============================================================================
-# DECORATOR: CONTROLE DE ACESSO (Só Administradores Passam)
+# DECORATOR: CONTROLE DE ACESSO (Restrito a Administradores)
 # ==============================================================================
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # Verifica se está logado E se possui perfil de Administrador
         if not current_user.is_authenticated or current_user.perfil != 'Administrador':
             flash('Acesso negado. Esta área é restrita a administradores do sistema.', 'danger')
             return redirect(url_for('main.index'))
@@ -21,23 +20,25 @@ def admin_required(f):
     return decorated_function
 
 # ==============================================================================
-# 1. GERENCIAMENTO DE USUÁRIOS (COM SEPARAÇÃO DE LOTAÇÃO E SETORES)
+# 1. GERENCIAMENTO DE USUÁRIOS
 # ==============================================================================
 
+@bp.route('/usuarios')
 @bp.route('/users')
 @login_required
 @admin_required
 def users_list():
-    """Lista todos os usuários cadastrados com suas respectivas lotações."""
+    """Lista todos os usuários com paginação e suporte a Lotação."""
     page = request.args.get('page', 1, type=int)
     users = User.query.order_by(User.nome).paginate(page=page, per_page=15)
     return render_template('admin/users_list.html', users=users)
 
+@bp.route('/usuarios/novo', methods=['GET', 'POST'])
 @bp.route('/users/new', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def user_create():
-    """Cadastra um novo usuário, atribuindo lotação física e setores de trâmite."""
+    """Cadastra um novo usuário vinculando Lotação e Setores autorizados."""
     form = UserForm()
 
     if form.validate_on_submit():
@@ -46,14 +47,12 @@ def user_create():
             email=form.email.data,
             perfil=form.perfil.data,
             ativo=form.ativo.data,
-            lotacao_id=form.lotacao_id.data  # Associação da Lotação
+            lotacao_id=form.lotacao_id.data
         )
-        
-        # Na criação, a senha é tratada via setter (hash automático)
+
         if form.password.data:
             user.password = form.password.data
 
-        # Associa os setores autorizados para tramitação
         if form.setores.data:
             user.setores_permitidos = Setor.query.filter(Setor.id.in_(form.setores.data)).all()
 
@@ -64,11 +63,12 @@ def user_create():
 
     return render_template('admin/users_form.html', form=form, title="Novo Usuário")
 
+@bp.route('/usuarios/editar/<int:id>', methods=['GET', 'POST'])
 @bp.route('/users/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def user_edit(id):
-    """Edita dados do usuário, sua lotação e seus setores autorizados."""
+    """Edita dados, Lotação e permissões de trâmite do usuário."""
     user = User.query.get_or_404(id)
     form = UserForm(original_email=user.email, obj=user)
 
@@ -82,12 +82,10 @@ def user_edit(id):
         user.email = form.email.data
         user.perfil = form.perfil.data
         user.ativo = form.ativo.data
-        user.lotacao_id = form.lotacao_id.data  # Atualiza Lotação de trabalho
+        user.lotacao_id = form.lotacao_id.data
 
-        # Atualiza a lista de setores permitidos para tramitação
         user.setores_permitidos = Setor.query.filter(Setor.id.in_(form.setores.data)).all() if form.setores.data else []
 
-        # Só altera a senha se o campo foi preenchido
         if form.password.data:
             user.password = form.password.data
 
@@ -97,6 +95,7 @@ def user_edit(id):
 
     return render_template('admin/users_form.html', form=form, title="Editar Usuário")
 
+@bp.route('/usuarios/excluir/<int:id>', methods=['POST'])
 @bp.route('/users/delete/<int:id>', methods=['POST'])
 @login_required
 @admin_required
@@ -104,7 +103,6 @@ def user_delete(id):
     """Exclui um usuário com verificação de segurança."""
     user = User.query.get_or_404(id)
 
-    # Proteção: Não permite excluir a si próprio
     if user.id == current_user.id:
         flash('Você não pode excluir seu próprio usuário enquanto está logado.', 'warning')
         return redirect(url_for('admin.users_list'))
@@ -112,30 +110,31 @@ def user_delete(id):
     try:
         db.session.delete(user)
         db.session.commit()
-        flash('Usuário removido com sucesso.', 'success')
-    except Exception as e:
+        flash(f'Usuário {user.nome} removido com sucesso.', 'success')
+    except Exception:
         db.session.rollback()
-        flash('Não foi possível excluir o usuário pois ele possui históricos ou documentos vinculados.', 'danger')
+        flash('Não é possível excluir o usuário pois ele possui documentos vinculados. Recomendamos desativá-lo.', 'danger')
 
     return redirect(url_for('admin.users_list'))
 
 # ==============================================================================
-# 2. GERENCIAMENTO DE LOTAÇÕES (NOVO MÓDULO)
+# 2. GERENCIAMENTO DE LOTAÇÕES (MÓDULO DE TRABALHO DO SERVIDOR)
 # ==============================================================================
 
 @bp.route('/lotacoes')
 @login_required
 @admin_required
 def lotacoes_list():
-    """Lista todas as Unidades de Lotação cadastradas."""
+    """Lista todas as unidades de Lotação cadastradas."""
     lotacoes = Lotacao.query.order_by(Lotacao.sigla).all()
     return render_template('admin/lotacoes_list.html', lotacoes=lotacoes)
 
+@bp.route('/lotacoes/novo', methods=['GET', 'POST'])
 @bp.route('/lotacoes/new', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def lotacao_create():
-    """Cadastra uma nova Lotação."""
+    """Cadastra uma nova Lotação de Trabalho."""
     form = LotacaoForm()
 
     if form.validate_on_submit():
@@ -151,6 +150,7 @@ def lotacao_create():
 
     return render_template('admin/lotacoes_form.html', form=form, title="Nova Lotação")
 
+@bp.route('/lotacoes/editar/<int:id>', methods=['GET', 'POST'])
 @bp.route('/lotacoes/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 @admin_required
@@ -170,6 +170,7 @@ def lotacao_edit(id):
 
     return render_template('admin/lotacoes_form.html', form=form, title="Editar Lotação")
 
+@bp.route('/lotacoes/excluir/<int:id>', methods=['POST'])
 @bp.route('/lotacoes/delete/<int:id>', methods=['POST'])
 @login_required
 @admin_required
@@ -187,17 +188,18 @@ def lotacao_delete(id):
     return redirect(url_for('admin.lotacoes_list'))
 
 # ==============================================================================
-# 3. GERENCIAMENTO DE SETORES (TRAMITAÇÃO DE PROCESSOS)
+# 3. GERENCIAMENTO DE SETORES DE TRAMITAÇÃO
 # ==============================================================================
 
 @bp.route('/setores')
 @login_required
 @admin_required
 def setores_list():
-    """Lista todos os setores por onde os processos tramitam."""
+    """Lista todos os setores de trâmite de processos."""
     setores = Setor.query.order_by(Setor.sigla).all()
     return render_template('admin/setores_list.html', setores=setores)
 
+@bp.route('/setores/novo', methods=['GET', 'POST'])
 @bp.route('/setores/new', methods=['GET', 'POST'])
 @login_required
 @admin_required
@@ -218,6 +220,7 @@ def setor_create():
 
     return render_template('admin/setores_form.html', form=form, title="Novo Setor")
 
+@bp.route('/setores/editar/<int:id>', methods=['GET', 'POST'])
 @bp.route('/setores/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 @admin_required
@@ -237,6 +240,7 @@ def setor_edit(id):
 
     return render_template('admin/setores_form.html', form=form, title="Editar Setor")
 
+@bp.route('/setores/excluir/<int:id>', methods=['POST'])
 @bp.route('/setores/delete/<int:id>', methods=['POST'])
 @login_required
 @admin_required
@@ -265,6 +269,7 @@ def tipos_list():
     tipos = TipoProcesso.query.order_by(TipoProcesso.nome).all()
     return render_template('admin/tipos_list.html', tipos=tipos)
 
+@bp.route('/tipos/novo', methods=['GET', 'POST'])
 @bp.route('/tipos/new', methods=['GET', 'POST'])
 @login_required
 @admin_required
@@ -284,6 +289,7 @@ def tipo_create():
 
     return render_template('admin/tipos_form.html', form=form, title="Novo Tipo de Processo")
 
+@bp.route('/tipos/editar/<int:id>', methods=['GET', 'POST'])
 @bp.route('/tipos/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 @admin_required
@@ -302,6 +308,7 @@ def tipo_edit(id):
 
     return render_template('admin/tipos_form.html', form=form, title="Editar Tipo")
 
+@bp.route('/tipos/excluir/<int:id>', methods=['POST'])
 @bp.route('/tipos/delete/<int:id>', methods=['POST'])
 @login_required
 @admin_required
