@@ -1,199 +1,246 @@
 <!DOCTYPE html>
-<html lang="pt-br" class="h-full bg-gray-50">
-
+<html lang="pt-br" class="h-full bg-slate-50">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ config_sistema.nome_sistema if config_sistema else 'SGO' }}{% endblock %} - {{ config_sistema.sigla_orgao if config_sistema else 'UEMA' }}</title>
     
-    <title>{% block title %}SGO - UEMA{% endblock %}</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Alpine.js para Controle de Estado Responsivo e Dropdowns -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts (Inter) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- CSS Customizado da Aplicação -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
-
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        // Paleta Personalizada Spark
-                        brand: {
-                            50: '#f0f9ff',
-                            100: '#e0f2fe',
-                            200: '#bae6fd',
-                            300: '#7dd3fc',
-                            400: '#38bdf8',
-                            500: '#0ea5e9', // Primary Brand Color
-                            600: '#0284c7',
-                            700: '#0369a1',
-                            800: '#075985',
-                            900: '#0c4a6e',
-                        },
-                        // Cores Institucionais UEMA (Aproximadas)
-                        uema: {
-                            red: '#be1622',
-                            blue: '#003c71',
-                            dark: '#1a1a1a'
-                        }
-                    },
-                    animation: {
-                        'fade-in': 'fadeIn 0.3s ease-out',
-                        'slide-in': 'slideIn 0.3s ease-out',
-                    },
-                    keyframes: {
-                        fadeIn: {
-                            '0%': { opacity: '0' },
-                            '100%': { opacity: '1' },
-                        },
-                        slideIn: {
-                            '0%': { transform: 'translateY(10px)', opacity: '0' },
-                            '100%': { transform: 'translateY(0)', opacity: '1' },
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
-
-    <style>
-        [x-cloak] { display: none !important; } /* Esconde elementos Alpine antes de carregar */
-        
-        /* Scrollbar Personalizada */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        
-        /* Ajuste para inputs do form */
-        input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; }
-    </style>
+    <!-- Suporte a Estilos Específicos por Template -->
+    {% block extra_css %}{% endblock %}
 </head>
+<body class="h-full antialiased text-slate-700 bg-slate-50 font-sans" x-data="{ sidebarOpen: false }">
 
-<body class="h-full font-sans text-slate-600 antialiased bg-gray-50" x-data="{ sidebarOpen: false }">
-
-    <div class="flex h-screen overflow-hidden">
-
-        <aside class="fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 text-white transition-transform duration-300 transform md:relative md:translate-x-0 flex flex-col shadow-xl"
-               :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
-            
-            {% include 'base/sidebar.html' %}
-            
-        </aside>
-
-        <div x-show="sidebarOpen" 
-             @click="sidebarOpen = false"
-             x-transition:enter="transition-opacity ease-linear duration-300"
-             x-transition:enter-start="opacity-0"
-             x-transition:enter-end="opacity-100"
-             x-transition:leave="transition-opacity ease-linear duration-300"
-             x-transition:leave-start="opacity-100"
-             x-transition:leave-end="opacity-0"
-             class="fixed inset-0 z-40 bg-gray-900 bg-opacity-50 md:hidden glass-effect"
-             x-cloak>
-        </div>
-
-        <div class="flex flex-col flex-1 min-w-0 overflow-hidden">
-            
-            <header class="relative z-10 flex-shrink-0 bg-white shadow-sm border-b border-gray-200 flex h-16">
-                
-                <button @click="sidebarOpen = true" type="button" class="px-4 border-r border-gray-200 text-gray-500 hover:text-brand-600 hover:bg-gray-50 focus:outline-none focus:bg-gray-100 focus:text-gray-600 md:hidden flex items-center justify-center transition-colors">
-                    <span class="sr-only">Abrir sidebar</span>
-                    <i class="fas fa-bars fa-lg"></i>
-                </button>
-
-                <div class="flex-1 px-4 flex justify-between md:px-8">
-                    {% include 'base/navbar.html' %}
-                </div>
-            </header>
-
-            <main class="flex-1 relative overflow-y-auto focus:outline-none scroll-smooth" tabindex="0">
-                <div class="py-6">
+    <div class="min-h-full flex flex-col">
+        <!-- ================================================================== -->
+        <!-- CABEÇALHO SUPERIOR (HEADER / NAVBAR) -->
+        <!-- ================================================================== -->
+        <header class="bg-slate-900 text-white sticky top-0 z-30 shadow-md">
+            <div class="px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                <!-- Esquerda: Toggle Mobile + Identificação da Instituição -->
+                <div class="flex items-center gap-4">
+                    <!-- Botão Hambúrguer para Dispositivos Móveis -->
+                    <button @click="sidebarOpen = !sidebarOpen" 
+                            type="button"
+                            aria-label="Abrir Menu Lateral"
+                            class="text-slate-300 hover:text-white p-2 rounded-lg hover:bg-slate-800 focus:outline-none lg:hidden">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
                     
-                    <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-                        
-                        {% with messages = get_flashed_messages(with_categories=true) %}
-                            {% if messages %}
-                                <div class="mb-6 space-y-3 animate-fade-in">
-                                    {% for category, message in messages %}
-                                        {% set color_class = 'bg-blue-50 text-blue-800 border-blue-200' %}
-                                        {% set icon_class = 'fa-info-circle text-blue-500' %}
-                                        
-                                        {% if category == 'success' %}
-                                            {% set color_class = 'bg-green-50 text-green-800 border-green-200' %}
-                                            {% set icon_class = 'fa-check-circle text-green-500' %}
-                                        {% elif category == 'danger' or category == 'error' %}
-                                            {% set color_class = 'bg-red-50 text-red-800 border-red-200' %}
-                                            {% set icon_class = 'fa-exclamation-circle text-red-500' %}
-                                        {% elif category == 'warning' %}
-                                            {% set color_class = 'bg-yellow-50 text-yellow-800 border-yellow-200' %}
-                                            {% set icon_class = 'fa-exclamation-triangle text-yellow-500' %}
-                                        {% endif %}
-
-                                        <div class="rounded-md border p-4 {{ color_class }} shadow-sm relative" role="alert" x-data="{ show: true }" x-show="show" x-transition.opacity>
-                                            <div class="flex">
-                                                <div class="flex-shrink-0">
-                                                    <i class="fas {{ icon_class }} h-5 w-5"></i>
-                                                </div>
-                                                <div class="ml-3">
-                                                    <p class="text-sm font-medium">{{ message }}</p>
-                                                </div>
-                                                <div class="ml-auto pl-3">
-                                                    <div class="-mx-1.5 -my-1.5">
-                                                        <button @click="show = false" type="button" class="inline-flex rounded-md p-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2 hover:bg-white hover:bg-opacity-20 transition-colors">
-                                                            <span class="sr-only">Fechar</span>
-                                                            <i class="fas fa-times h-4 w-4"></i>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                        {% endwith %}
-
-                        <div class="animate-fade-in">
-                            {% block content %}{% endblock %}
+                    <!-- Logotipo e Identificação do Sistema -->
+                    <a href="{{ url_for('main.index') }}" class="flex items-center gap-3 group">
+                        <img src="{{ config_sistema.logo_url if config_sistema and config_sistema.logo_url else 'https://upload.wikimedia.org/wikipedia/commons/2/20/Bras%C3%A3o_UEMA.png' }}" 
+                             alt="Brasão Órgão" 
+                             class="h-10 w-auto object-contain transition-transform group-hover:scale-105">
+                        <div class="border-l border-slate-700 pl-3">
+                            <span class="font-bold text-lg leading-none block text-white tracking-wide">{{ config_sistema.nome_sistema if config_sistema else 'SGO' }}</span>
+                            <span class="text-[11px] text-slate-400 block mt-0.5 uppercase tracking-wider font-medium">{{ config_sistema.sigla_orgao if config_sistema else 'UEMA' }}</span>
                         </div>
-
-                    </div>
+                    </a>
                 </div>
 
-                <footer class="bg-white border-t border-gray-200 mt-auto py-6 px-4 sm:px-6 lg:px-8">
-                    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center text-center md:text-left text-sm text-gray-500">
-                        <div class="mb-3 md:mb-0">
-                            &copy; {{ current_year }} <span class="font-bold text-brand-600">SGO</span>.
-                        </div>
-                        <div class="flex items-center justify-center space-x-2 sm:space-x-4">
-                            <span>Versão 2.1.0 (Beta)</span>
-                            <span class="text-gray-300">|</span>
-                            <span>Desenvolvido para <span class="font-bold text-uema-blue">UEMA</span></span>
+                <!-- Direita: Notificações + Perfil do Usuário Logado -->
+                <div class="flex items-center gap-3 sm:gap-5">
+                    <!-- Central de Notificações com Dropdown -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" 
+                                type="button"
+                                class="relative p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-full focus:outline-none transition-colors">
+                            <i class="fa-regular fa-bell text-lg"></i>
+                            {% if notificacoes_count > 0 %}
+                                <span class="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
+                                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                                  <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-sky-500"></span>
+                                </span>
+                            {% endif %}
+                        </button>
+
+                        <!-- Menu suspenso de notificações -->
+                        <div x-show="open" 
+                             @click.away="open = false" 
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="transform opacity-0 scale-95"
+                             x-transition:enter-end="transform opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="transform opacity-100 scale-100"
+                             x-transition:leave-end="transform opacity-0 scale-95"
+                             class="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl py-1 z-50 border border-slate-200 text-slate-800" 
+                             style="display: none;">
+                            <div class="px-4 py-2.5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                                <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">Notificações</span>
+                                <span class="text-[10px] bg-sky-100 text-sky-800 font-bold px-2 py-0.5 rounded-full">{{ notificacoes_count }} novas</span>
+                            </div>
+                            <div class="max-h-64 overflow-y-auto divide-y divide-slate-100">
+                                {% for n in notificacoes_nav %}
+                                    <a href="{{ n.link if n.link else '#' }}" class="block px-4 py-3 hover:bg-slate-50 transition-colors">
+                                        <p class="text-xs font-medium text-slate-800 leading-snug">{{ n.mensagem }}</p>
+                                        <span class="text-slate-400 text-[10px] mt-1 block font-normal">{{ n.tempo_atras() }}</span>
+                                    </a>
+                                {% else %}
+                                    <div class="px-4 py-8 text-center text-xs text-slate-400">Nenhuma notificação cadastrada.</div>
+                                {% endfor %}
+                            </div>
                         </div>
                     </div>
-                </footer>
+
+                    <!-- Perfil do Servidor (Lotação e Avatar) -->
+                    {% if current_user.is_authenticated %}
+                        <div class="relative border-l border-slate-700 pl-3 sm:pl-5" x-data="{ open: false }">
+                            <button @click="open = !open" type="button" class="flex items-center gap-3 text-sm focus:outline-none group">
+                                <div class="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs uppercase shadow-inner border border-blue-400/30">
+                                    {{ current_user.nome[:2] }}
+                                </div>
+                                <div class="hidden md:block text-left">
+                                    <span class="font-semibold text-xs block text-slate-100 group-hover:text-white leading-none">{{ current_user.nome }}</span>
+                                    <span class="text-[10px] text-sky-400 block mt-1 leading-none font-medium">
+                                        <i class="fa-solid fa-building text-[9px] mr-0.5"></i>
+                                        {{ current_user.lotacao_trabalho.sigla if current_user.lotacao_trabalho else 'Sem Lotação' }}
+                                    </span>
+                                </div>
+                                <i class="fa-solid fa-chevron-down text-xs text-slate-400 group-hover:text-white transition-transform duration-200" :class="open ? 'rotate-180' : ''"></i>
+                            </button>
+
+                            <!-- Menu do Usuário -->
+                            <div x-show="open" 
+                                 @click.away="open = false" 
+                                 x-transition 
+                                 class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl py-1 z-50 border border-slate-200 text-slate-800" 
+                                 style="display: none;">
+                                <div class="px-4 py-3 border-b border-slate-100 bg-slate-50/50">
+                                    <p class="text-xs font-bold text-slate-800 truncate">{{ current_user.nome }}</p>
+                                    <p class="text-[11px] text-slate-500 truncate mt-0.5">{{ current_user.email }}</p>
+                                    <span class="inline-block mt-2 text-[10px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded font-semibold">
+                                        Lotação: {{ current_user.lotacao_trabalho.nome if current_user.lotacao_trabalho else 'Não alocado' }}
+                                    </span>
+                                </div>
+                                <a href="{{ url_for('main.meus_dados') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-700 hover:bg-slate-50 transition-colors">
+                                    <i class="fa-regular fa-id-card text-slate-400 w-4"></i> Meus Dados Cadastrais
+                                </a>
+                                <div class="border-t border-slate-100 my-1"></div>
+                                <a href="{{ url_for('auth.logout') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-xs text-red-600 hover:bg-red-50 transition-colors font-medium">
+                                    <i class="fa-solid fa-arrow-right-from-bracket w-4"></i> Sair do Sistema
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </header>
+
+        <!-- ================================================================== -->
+        <!-- ESTRUTURA CENTRAL: SIDEBAR LATERAL + CONTEÚDO -->
+        <!-- ================================================================== -->
+        <div class="flex flex-1 relative">
+            <!-- Sidebar / Menu Navegação Lateral -->
+            <aside class="w-64 bg-white border-r border-slate-200 flex-shrink-0 lg:block fixed lg:static inset-y-0 left-0 z-20 sidebar-transition transform lg:transform-none shadow-sm"
+                   :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'">
+                
+                <div class="p-4 space-y-6">
+                    <!-- Grupo: Navegação Geral -->
+                    <div class="space-y-1">
+                        <span class="px-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase block mb-2">Menu Principal</span>
+                        
+                        <a href="{{ url_for('main.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100 hover:text-blue-600 transition-colors">
+                            <i class="fa-solid fa-chart-pie text-slate-400 w-4 text-sm"></i> Dashboard Geral
+                        </a>
+                        
+                        <a href="{{ url_for('oficios.list') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100 hover:text-blue-600 transition-colors">
+                            <i class="fa-solid fa-folder-tree text-slate-400 w-4 text-sm"></i> Ofícios / Trâmites
+                        </a>
+
+                        <a href="{{ url_for('notas.list') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100 hover:text-blue-600 transition-colors">
+                            <i class="fa-solid fa-file-invoice-dollar text-slate-400 w-4 text-sm"></i> Notas Orçamentárias
+                        </a>
+
+                        <a href="{{ url_for('main.relatorio_geral') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100 hover:text-blue-600 transition-colors">
+                            <i class="fa-solid fa-print text-slate-400 w-4 text-sm"></i> Emitir Relatórios
+                        </a>
+                    </div>
+
+                    <!-- Grupo: Módulo de Administração (Somente Admin) -->
+                    {% if current_user.is_authenticated and current_user.perfil == 'Administrador' %}
+                        <div class="space-y-1 border-t border-slate-100 pt-4">
+                            <span class="px-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase block mb-2">Administração</span>
+                            
+                            <a href="{{ url_for('admin.users_list') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100 hover:text-blue-600 transition-colors">
+                                <i class="fa-solid fa-users-gear text-slate-400 w-4 text-sm"></i> Gestão de Usuários
+                            </a>
+
+                            <!-- Novo Módulo: Lotações de Trabalho -->
+                            <a href="{{ url_for('admin.lotacoes_list') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100 hover:text-blue-600 transition-colors">
+                                <i class="fa-solid fa-building-user text-slate-400 w-4 text-sm"></i> Lotações (Trabalho)
+                            </a>
+
+                            <!-- Setores Administrativos de Trâmite -->
+                            <a href="{{ url_for('admin.setores_list') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100 hover:text-blue-600 transition-colors">
+                                <i class="fa-solid fa-sitemap text-slate-400 w-4 text-sm"></i> Setores (Trâmite)
+                            </a>
+
+                            <a href="{{ url_for('admin.tipos_list') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100 hover:text-blue-600 transition-colors">
+                                <i class="fa-solid fa-tags text-slate-400 w-4 text-sm"></i> Tipos de Processo
+                            </a>
+
+                            <a href="{{ url_for('admin.configuracoes') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100 hover:text-blue-600 transition-colors">
+                                <i class="fa-solid fa-sliders text-slate-400 w-4 text-sm"></i> Configurações Órgão
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </aside>
+
+            <!-- Overlay Transparente para Fechar Sidebar no Mobile -->
+            <div x-show="sidebarOpen" 
+                 @click="sidebarOpen = false" 
+                 x-transition:enter="transition-opacity ease-linear duration-300"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition-opacity ease-linear duration-300"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 class="fixed inset-0 bg-slate-900/50 z-10 lg:hidden"
+                 style="display: none;"></div>
+
+            <!-- Área Principal de Conteúdo -->
+            <main class="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto w-full">
+                <!-- Alertas Flash -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                    <div class="alert-container mb-6">
+                      {% for category, message in messages %}
+                        <div class="alert-tailwind {% if category == 'danger' %}alert-danger{% elif category == 'success' %}alert-success{% elif category == 'warning' %}alert-warning{% else %}alert-info{% endif %} shadow-sm">
+                          <div class="flex items-center gap-3">
+                              <i class="fa-solid {% if category == 'danger' %}fa-circle-xmark{% elif category == 'success' %}fa-circle-check{% elif category == 'warning' %}fa-triangle-exclamation{% else %}fa-circle-info{% endif %} text-base"></i>
+                              <span class="font-medium text-xs sm:text-sm">{{ message }}</span>
+                          </div>
+                        </div>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                {% endwith %}
+
+                <!-- Bloco de Conteúdo Específico das Páginas -->
+                {% block content %}{% endblock %}
             </main>
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-    
-    {% block scripts %}{% endblock %}
-
+    <!-- Scripts Adicionais -->
+    {% block extra_js %}{% endblock %}
 </body>
 </html>
