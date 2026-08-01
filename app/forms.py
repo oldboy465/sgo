@@ -1,9 +1,8 @@
 # forms.py
 from flask_wtf import FlaskForm
-# ADIÇÃO: Importamos SelectMultipleField e widgets para usar caixas de seleção
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, TextAreaField, DateField, IntegerField, TimeField, SelectMultipleField, widgets
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError, Optional
-from app.models import User, Setor, TipoProcesso, Oficio, Configuracao, NotaOrcamentaria
+from app.models import User, Setor, Lotacao, TipoProcesso, Oficio, Configuracao, NotaOrcamentaria
 
 # ==============================================================================
 # FORMULÁRIO DE AUTENTICAÇÃO (LOGIN)
@@ -24,13 +23,13 @@ class LoginForm(FlaskForm):
 # ==============================================================================
 class UserForm(FlaskForm):
     nome = StringField('Nome Completo', validators=[
-        DataRequired(),
+        DataRequired(message="O nome é obrigatório."),
         Length(min=3, max=100)
     ])
 
     email = StringField('E-mail Corporativo', validators=[
-        DataRequired(),
-        Email(),
+        DataRequired(message="O e-mail é obrigatório."),
+        Email(message="Insira um e-mail válido."),
         Length(max=120)
     ])
 
@@ -43,16 +42,21 @@ class UserForm(FlaskForm):
         EqualTo('password', message='As senhas devem ser iguais.')
     ])
 
+    # SELEÇÃO DA LOTAÇÃO OFICIAL DO USUÁRIO (ONDE O SERVIDOR TRABALHA)
+    lotacao_id = SelectField('Lotação de Trabalho', coerce=int, validators=[
+        DataRequired(message="Selecione a lotação do usuário.")
+    ])
+
     perfil = SelectField('Perfil de Acesso', choices=[
         ('Usuario', 'Usuário Padrão'),
         ('Administrador', 'Administrador do Sistema')
     ], validators=[DataRequired()])
 
     ativo = BooleanField('Usuário Ativo', default=True)
-    
-    # ADIÇÃO: Campo de seleção múltipla transformado em lista de Checkboxes
+
+    # SELEÇÃO MÚLTIPLA DOS SETORES QUE O USUÁRIO PODE ACOMPANHAR/TRAMITAR
     setores = SelectMultipleField(
-        'Setores Autorizados',
+        'Setores Autorizados para Tramitação',
         coerce=int,
         widget=widgets.ListWidget(prefix_label=False),
         option_widget=widgets.CheckboxInput()
@@ -63,11 +67,13 @@ class UserForm(FlaskForm):
     def __init__(self, original_email=None, *args, **kwargs):
         super(UserForm, self).__init__(*args, **kwargs)
         self.original_email = original_email
-        
-        # ADIÇÃO: Preenche dinamicamente as opções de setores
+
+        # Preenche dinamicamente as opções de Lotações e Setores
         try:
+            self.lotacao_id.choices = [(l.id, f"{l.sigla} - {l.nome}") for l in Lotacao.query.filter_by(ativo=True).order_by(Lotacao.sigla).all()]
             self.setores.choices = [(s.id, f"{s.sigla} - {s.nome}") for s in Setor.query.filter_by(ativo=True).order_by(Setor.sigla).all()]
-        except:
+        except Exception:
+            self.lotacao_id.choices = []
             self.setores.choices = []
 
     def validate_email(self, email):
@@ -77,7 +83,35 @@ class UserForm(FlaskForm):
                 raise ValidationError('Este e-mail já está cadastrado para outro usuário.')
 
 # ==============================================================================
-# FORMULÁRIO DE PERFIL (MEUS DADOS) - NOVO
+# FORMULÁRIO DE GERENCIAMENTO DE LOTAÇÃO (NOVO)
+# ==============================================================================
+class LotacaoForm(FlaskForm):
+    nome = StringField('Nome da Unidade de Lotação', validators=[
+        DataRequired(message="O nome da lotação é obrigatório."),
+        Length(min=2, max=100)
+    ])
+
+    sigla = StringField('Sigla (Ex: PROPLAD)', validators=[
+        DataRequired(message="A sigla é obrigatória."),
+        Length(min=2, max=20)
+    ])
+
+    ativo = BooleanField('Lotação Ativa', default=True)
+
+    submit = SubmitField('Salvar Lotação')
+
+    def __init__(self, original_sigla=None, *args, **kwargs):
+        super(LotacaoForm, self).__init__(*args, **kwargs)
+        self.original_sigla = original_sigla
+
+    def validate_sigla(self, sigla):
+        if sigla.data != self.original_sigla:
+            lotacao = Lotacao.query.filter_by(sigla=sigla.data.upper()).first()
+            if lotacao:
+                raise ValidationError('Já existe uma lotação cadastrada com esta sigla.')
+
+# ==============================================================================
+# FORMULÁRIO DE PERFIL (MEUS DADOS)
 # ==============================================================================
 class PerfilForm(FlaskForm):
     nome = StringField('Nome Completo', validators=[DataRequired()])
@@ -89,16 +123,13 @@ class PerfilForm(FlaskForm):
     submit = SubmitField('Salvar Alterações')
 
 # ==============================================================================
-# FORMULÁRIO DE CONFIGURAÇÕES GERAIS - NOVO
+# FORMULÁRIO DE CONFIGURAÇÕES GERAIS
 # ==============================================================================
 class ConfiguracaoForm(FlaskForm):
     nome_sistema = StringField('Nome do Sistema', validators=[DataRequired()])
     sigla_orgao = StringField('Sigla do Órgão', validators=[DataRequired()])
     nome_departamento = StringField('Nome do Departamento', validators=[Optional()])
-
-    # Campo Novo para URL do Brasão
     logo_url = StringField('URL do Brasão/Logo', validators=[Optional(), Length(max=500)])
-
     itens_por_pagina = IntegerField('Itens por Página', validators=[DataRequired()])
     email_suporte = StringField('E-mail de Suporte', validators=[Optional(), Email()])
     modo_manutencao = BooleanField('Modo de Manutenção')
@@ -128,7 +159,7 @@ class SetorForm(FlaskForm):
 
     def validate_sigla(self, sigla):
         if sigla.data != self.original_sigla:
-            setor = Setor.query.filter_by(sigla=sigla.data).first()
+            setor = Setor.query.filter_by(sigla=sigla.data.upper()).first()
             if setor:
                 raise ValidationError('Já existe um setor com esta sigla.')
 
@@ -188,7 +219,6 @@ class OficioForm(FlaskForm):
         DataRequired()
     ])
 
-    # SelectFields com coerce=int para garantir IDs inteiros
     tipo_processo_id = SelectField('Tipo de Processo', coerce=int, validators=[DataRequired()])
     setor_emissor_id = SelectField('Setor Emissor', coerce=int, validators=[DataRequired()])
     setor_atual_id = SelectField('Localização Atual', coerce=int, validators=[Optional()])
@@ -204,8 +234,6 @@ class OficioForm(FlaskForm):
         ('Cancelada', 'Cancelada')
     ], default='Em andamento')
 
-    # Campo de Ação Tomada / Despacho
-    # Mantendo como TextAreaField para garantir que o formulário processe o campo corretamente
     acao_tomada = TextAreaField('Ação Tomada / Despacho', validators=[Optional()])
 
     submit = SubmitField('Salvar Ofício')
@@ -214,22 +242,16 @@ class OficioForm(FlaskForm):
         super(OficioForm, self).__init__(*args, **kwargs)
         self.original_numero = original_numero
 
-        # População dinâmica dos selects
-        # Nota: Filtramos apenas setores ativos e ordenamos para melhor UX
         try:
             self.tipo_processo_id.choices = [(t.id, t.nome) for t in TipoProcesso.query.order_by(TipoProcesso.nome).all()]
             self.setor_emissor_id.choices = [(s.id, f"{s.sigla} - {s.nome}") for s in Setor.query.filter_by(ativo=True).order_by(Setor.sigla).all()]
             self.setor_atual_id.choices = [(s.id, f"{s.sigla} - {s.nome}") for s in Setor.query.filter_by(ativo=True).order_by(Setor.sigla).all()]
-        except:
-            # Fallback caso o banco ainda não tenha sido criado ou esteja sem tabelas
+        except Exception:
             self.tipo_processo_id.choices = []
             self.setor_emissor_id.choices = []
             self.setor_atual_id.choices = []
 
     def validate_numero_oficio(self, numero_oficio):
-        """
-        Valida unicidade do número do ofício.
-        """
         if numero_oficio.data != self.original_numero:
             oficio = Oficio.query.filter_by(numero_oficio=numero_oficio.data).first()
             if oficio:

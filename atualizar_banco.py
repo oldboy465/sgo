@@ -17,6 +17,28 @@ try:
 except sqlite3.OperationalError as e:
     print(f"⚠️ Aviso: {e} (A coluna já pode existir)")
 
+# =========================================================================
+# ADIÇÃO: TABELA DE LOTAÇÃO (UNIDADE DE TRABALHO DO USUÁRIO)
+# =========================================================================
+try:
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS lotacoes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nome VARCHAR(100) NOT NULL,
+        sigla VARCHAR(20) NOT NULL UNIQUE,
+        ativo BOOLEAN DEFAULT 1
+    );
+    """)
+    print("✅ Tabela 'lotacoes' verificada/criada com sucesso.")
+except sqlite3.OperationalError as e:
+    print(f"⚠️ Erro ao criar tabela de lotacoes: {e}")
+
+try:
+    cursor.execute("ALTER TABLE users ADD COLUMN lotacao_id INTEGER REFERENCES lotacoes(id);")
+    print("✅ Coluna 'lotacao_id' adicionada à tabela 'users' com sucesso.")
+except sqlite3.OperationalError as e:
+    print(f"⚠️ Aviso: {e} (A coluna 'lotacao_id' já pode existir na tabela 'users')")
+
 try:
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS notas_orcamentarias (
@@ -40,7 +62,7 @@ except sqlite3.OperationalError as e:
     print(f"⚠️ Erro ao criar tabela de notas: {e}")
 
 # =========================================================================
-# ADIÇÃO: CRIAÇÃO DA TABELA DE RELACIONAMENTO USUÁRIO <-> SETOR
+# CRIAÇÃO DA TABELA DE RELACIONAMENTO USUÁRIO <-> SETOR (TRAMITAÇÃO)
 # =========================================================================
 try:
     cursor.execute("""

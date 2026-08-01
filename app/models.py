@@ -8,22 +8,42 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 # ==============================================================================
-# TABELA DE ASSOCIAÇÃO: USUÁRIO <-> SETOR (NOVO)
+# TABELA DE ASSOCIAÇÃO: USUÁRIO <-> SETOR (PERMISSÕES DE TRAMITAÇÃO)
 # ==============================================================================
-# Esta tabela invisível permite que um usuário pertença a vários setores 
-# e que um setor tenha vários usuários (Muitos-para-Muitos).
+# Esta tabela invisível permite que um usuário acompanhe/tramite ofícios de vários setores
 usuario_setor = db.Table('usuario_setor',
     db.Column('user_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
     db.Column('setor_id', db.Integer, db.ForeignKey('setores.id'), primary_key=True)
 )
 
 # ==============================================================================
-# MODELO: USUÁRIOS (Autenticação e Permissões)
+# MODELO: LOTAÇÃO (UNIDADE FÍSICA / EXECUTIVA DE TRABALHO DO SERVIDOR)
+# ==============================================================================
+class Lotacao(db.Model):
+    """
+    Representa a Lotação de trabalho do usuário (onde ele desempenha funções).
+    Diferente de Setor, que é a unidade administrativa por onde os processos tramitam.
+    """
+    __tablename__ = 'lotacoes'
+
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(100), nullable=False)
+    sigla = db.Column(db.String(20), nullable=False, unique=True)
+    ativo = db.Column(db.Boolean, default=True)
+
+    # Relacionamento de 1 para Muitos com Usuários
+    servidores = db.relationship('User', backref='lotacao_trabalho', lazy=True)
+
+    def __repr__(self):
+        return f'<Lotacao {self.sigla} - {self.nome}>'
+
+# ==============================================================================
+# MODELO: USUÁRIOS (Autenticação, Lotação e Permissões de Tramitação)
 # ==============================================================================
 class User(UserMixin, db.Model):
     """
-    Tabela de Usuários com segurança de hash de senha integrada.
-    Substitui a antiga classe 'Usuario'.
+    Tabela de Usuários com segurança de hash de senha integrada e separação
+    entre Lotação (trabalho) e Setores (permissão de movimentação).
     """
     __tablename__ = 'users'
 
@@ -36,14 +56,17 @@ class User(UserMixin, db.Model):
     perfil = db.Column(db.String(20), default='Usuario', nullable=False)
     ativo = db.Column(db.Boolean, default=True)
 
+    # NOVO: Lotação Oficial onde o servidor trabalha
+    lotacao_id = db.Column(db.Integer, db.ForeignKey('lotacoes.id'), nullable=True)
+
     # Auditoria
     created_at = db.Column(db.DateTime, default=datetime.datetime.now)
     updated_at = db.Column(db.DateTime, onupdate=datetime.datetime.now)
 
     # Relacionamentos
     oficios_criados = db.relationship('Oficio', backref='criador', lazy=True)
-    
-    # ADIÇÃO: Relacionamento Muitos-para-Muitos com Setores
+
+    # Relacionamento Muitos-para-Muitos com Setores Autorizados a Tramitar
     setores_permitidos = db.relationship('Setor', secondary=usuario_setor, backref=db.backref('usuarios_vinculados', lazy='dynamic'))
 
     @property
@@ -64,11 +87,11 @@ class User(UserMixin, db.Model):
         return f'<User {self.email} - {self.perfil}>'
 
 # ==============================================================================
-# MODELO: SETORES (Unidades Administrativas)
+# MODELO: SETORES (Unidades Administrativas de Tramitação de Processos)
 # ==============================================================================
 class Setor(db.Model):
     """
-    Unidades organizacionais (Ex: ASPLAN, PROG, REITORIA).
+    Unidades organizacionais de trâmite de processos (Ex: ASPLAN, PROG, REITORIA).
     """
     __tablename__ = 'setores'
 
@@ -103,12 +126,11 @@ class TipoProcesso(db.Model):
         return f'<TipoProcesso {self.nome}>'
 
 # ==============================================================================
-# MODELO: CONFIGURAÇÕES DO SISTEMA (NOVO)
+# MODELO: CONFIGURAÇÕES DO SISTEMA
 # ==============================================================================
 class Configuracao(db.Model):
     """
     Armazena configurações globais do sistema (Singleton pattern via DB).
-    Resolve o problema de persistência do Brasão e Nomes.
     """
     __tablename__ = 'configuracoes'
 
@@ -117,7 +139,6 @@ class Configuracao(db.Model):
     sigla_orgao = db.Column(db.String(20), default='UEMA')
     nome_departamento = db.Column(db.String(100), default='Coordenação de Planejamento e Orçamento')
 
-    # Campo crucial para o Brasão funcionar dinamicamente
     logo_url = db.Column(db.String(500), nullable=True, default='https://upload.wikimedia.org/wikipedia/commons/2/20/Bras%C3%A3o_UEMA.png')
 
     itens_por_pagina = db.Column(db.Integer, default=10)
@@ -128,7 +149,7 @@ class Configuracao(db.Model):
         return f'<Configuracao {self.nome_sistema}>'
 
 # ==============================================================================
-# MODELO: OFÍCIOS (Tabela Principal)
+# MODELO: OFÍCIOS (Tabela Principal de Processos)
 # ==============================================================================
 class Oficio(db.Model):
     """
@@ -153,8 +174,6 @@ class Oficio(db.Model):
 
     # Workflow
     status = db.Column(db.String(50), default='Em andamento')
-
-    # Campo para o Despacho/Solução (já existia, mas vamos garantir que o Routes use ele)
     acao_tomada = db.Column(db.Text, nullable=True)
 
     # Chaves Estrangeiras
@@ -164,7 +183,6 @@ class Oficio(db.Model):
     setor_emissor_id = db.Column(db.Integer, db.ForeignKey('setores.id'), nullable=False)
     setor_atual_id = db.Column(db.Integer, db.ForeignKey('setores.id'), nullable=True)
 
-    # Lógica de Substituição (Auto-Relacionamento)
     substituido_por_id = db.Column(db.Integer, db.ForeignKey('oficios.id'), nullable=True)
     substituido_por = db.relationship('Oficio', remote_side=[id], backref='substituiu_anterior')
 
@@ -195,7 +213,7 @@ class Oficio(db.Model):
         return f'<Oficio {self.numero_oficio}>'
 
 # ==============================================================================
-# MODELO: NOTIFICAÇÕES (NOVO)
+# MODELO: NOTIFICAÇÕES
 # ==============================================================================
 class Notificacao(db.Model):
     """
@@ -205,17 +223,15 @@ class Notificacao(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     mensagem = db.Column(db.String(255), nullable=False)
-    categoria = db.Column(db.String(20), default='info') # info, success, warning
-    link = db.Column(db.String(200), nullable=True) # Para onde vai ao clicar
-    lida = db.Column(db.Boolean, default=False) # Opcional, para controle futuro
+    categoria = db.Column(db.String(20), default='info')
+    link = db.Column(db.String(200), nullable=True)
+    lida = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.datetime.now)
 
-    # Quem gerou a notificação (opcional, mas bom para saber quem fez)
     autor_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     autor = db.relationship('User', foreign_keys=[autor_id])
 
     def tempo_atras(self):
-        """Retorna string amigável: 'Há 5 minutos', 'Agora mesmo'"""
         diff = datetime.datetime.now() - self.created_at
         segundos = diff.total_seconds()
 
@@ -231,6 +247,9 @@ class Notificacao(db.Model):
             dias = int(segundos / 86400)
             return f"Há {dias} dias"
 
+# ==============================================================================
+# MODELO: NOTAS ORÇAMENTÁRIAS
+# ==============================================================================
 class NotaOrcamentaria(db.Model):
     __tablename__ = 'notas_orcamentarias'
 
