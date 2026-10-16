@@ -6,5 +6,5 @@ Flask-WTF
 WTForms
 SQLAlchemy
 werkzeug
-psycopg2-binary
+psycopg[binary]
 email-validator
